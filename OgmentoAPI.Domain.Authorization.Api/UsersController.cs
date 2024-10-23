@@ -28,7 +28,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		[Authorize(Policy = PolicyNames.Administrator)]
 		public IActionResult GetCurrentUser()
 		{
-			UserDetailsDto result = Self.Adapt<UserDetailsDto>();
+			UserDetailsDto result = Self.ToDto();
 			return Ok(result);
 		}
 
@@ -38,7 +38,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		[Produces(typeof(UserDetailsDto))]
 		public IActionResult GetUserDetail()
 		{
-			UserDetailsDto result = Self.Adapt<UserDetailsDto>();
+			UserDetailsDto result = Self.ToDto();
 			return Ok(result);
 		}
 
@@ -49,7 +49,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		public IActionResult GetUserDetails()
 		{
 			List<UserModel> result = _userService.GetUserDetails();
-			List<UserDetailsDto> userDetailsDtos = UserMapsterConfig.MapToDto(result);
+			List<UserDetailsDto> userDetailsDtos = result.ToDto();
 			return Ok(userDetailsDtos);
 		}
 
@@ -59,7 +59,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		[Produces(typeof(bool))]
 		public IActionResult UpdateUserDetails(UserDetailsDto userDetails)
 		{
-			UserModel model = userDetails.Adapt<UserModel>();
+			UserModel model = userDetails.ToModel();
 			model.UserId = Self.UserId;
 			var result = _userService.UpdateUser(model);
 			return Ok(result);
@@ -71,8 +71,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		[Produces(typeof(int?))]
 		public IActionResult AddUser(AddUserDto user)
 		{
-			UserModel model = user.Adapt<UserModel>();
-			//model.UserId = Self.UserId;
+			UserModel model = user.ToModel();
 			_userService.AddUser(model);
 			return Ok();
 		}

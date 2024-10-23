@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
+using Mapster;
 
 
 namespace OgmentoAPI.Domain.Catalog.Api
@@ -21,21 +22,24 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[HttpGet]
 		public async Task<IActionResult> GetAllCategories()
 		{
-
-			return Ok((await _categoryServices.GetAllCategories()).ToDto());
+			var categories = await _categoryServices.GetAllCategories();
+			return Ok(categories.Select(category => category.ToDto()).ToList());
 		}
-		[HttpGet]
-		[Route("{categoryUid}")]
+
+		[HttpGet("{categoryUid}")]
 		public async Task<IActionResult> GetCategory(Guid categoryUid)
 		{
-			return Ok((await _categoryServices.GetCategory(categoryUid)).ToDto());
+			var category = await _categoryServices.GetCategory(categoryUid);
+			return Ok(category.ToDto());
 		}
+
 		[HttpPut]
 		public async Task<IActionResult> UpdateCategory(UpdateCategoryDto request)
 		{
 			await _categoryServices.UpdateCategory(request.CategoryUid, request.CategoryName);
 			return Ok();
 		}
+
 		[HttpDelete]
 		[Route("{categoryUid}")]
 		public async Task<IActionResult> DeleteCategory(Guid categoryUid)
@@ -43,17 +47,20 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			await _categoryServices.DeleteCategory(categoryUid);
 			return Ok();
 		}
+
 		[HttpPost]
 		[Route("upload")]
 		public async Task<IActionResult> AddCategories(List<CategoryDto> categories)
 		{
-			return Ok((await _categoryServices.AddCategories
-				(categories.ToModel())).ToDto());
+			var addedCategories = await _categoryServices.AddCategories(categories.ToModel());
+			return Ok(addedCategories.ToDto());
 		}
+		
 		[HttpPost]
 		public async Task<IActionResult> AddNewCategory(CategoryDto categoryDto)
 		{
-			return Ok((await _categoryServices.AddNewCategory(categoryDto.ToModel())).ToDto());
+			var addedCategory = await _categoryServices.AddNewCategory(categoryDto.ToModel());
+			return Ok(addedCategory.ToDto());
 		}
 	}
 }

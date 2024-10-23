@@ -1,12 +1,8 @@
-﻿using Mapster;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OgmentoAPI.Domain.Client.Abstractions.Dto;
 using OgmentoAPI.Domain.Client.Abstractions.Models;
 using OgmentoAPI.Domain.Client.Abstractions.Service;
-
-namespace OgmentoAPI.Domain.Client.Api
-{
 
 	[ApiController]
 	[Authorize]
@@ -20,13 +16,13 @@ namespace OgmentoAPI.Domain.Client.Api
 			_kioskService = kioskService;
 		}
 
-		[HttpGet]
-		public IActionResult GetKioskDetails()
-		{
-			List<KioskModel> result = _kioskService.GetKioskDetails();
-			List<KioskDto> response = result.Adapt<List<KioskDto>>();
-			return Ok(response);
-		}
+	[HttpGet]
+	public IActionResult GetKioskDetails()
+	{
+		List<KioskModel> result = _kioskService.GetKioskDetails();
+		List<KioskDto> response = result.ToDto();
+		return Ok(response);
+	}
 
 		[Route("addkiosk")]
 		[HttpPost]
@@ -34,7 +30,6 @@ namespace OgmentoAPI.Domain.Client.Api
 		{
 			await _kioskService.AddKiosk(kioskdto.ToModel());
 			return Ok();
-
 		}
 
 		[HttpPut]
@@ -46,16 +41,12 @@ namespace OgmentoAPI.Domain.Client.Api
 		}
 
 		[Route("delete/{kioskName}")]
-		[HttpDelete]
+	[HttpDelete]
 		public async Task<IActionResult> DeleteKiosk(string kioskName)
-		{
+	{
 			await _kioskService.DeleteKioskByName(kioskName);
 			return Ok();
-		}
+	}
 
 		
-	}
 }
-
-
-

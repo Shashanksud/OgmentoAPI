@@ -14,8 +14,6 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			_context = context;
 		}
 
-
-
 		public List<KioskModel> GetKioskDetails()
 		{
 			List<Kiosk> allDetail = _context.Kiosk.ToList();
@@ -85,7 +83,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			if (isExists)
 			{
 				throw new InvalidDataException($"Kiosk Already Exists with name {kioskModel.KioskName}.");
-			}
+	}
 			Kiosk kiosk = new Kiosk()
 			{
 				KioskName = kioskModel.KioskName,
@@ -98,7 +96,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			if (rowsAdded == 0)
 			{
 				throw new DatabaseOperationException("Unable to add Kiosk.");
-			}
+}
 		}
 	}
 }
