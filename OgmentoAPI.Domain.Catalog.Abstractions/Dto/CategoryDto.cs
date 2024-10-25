@@ -6,6 +6,6 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Dto
 		public Guid CategoryUid { get; set; }
 		public string CategoryName { get; set; }
 		public Guid ParentCategoryUid { get; set; }
-		public List<CategoryDto> SubCategories { get; set; }
+		public List<CategoryDto> SubCategories { get; set; } = [];
 	}
 }

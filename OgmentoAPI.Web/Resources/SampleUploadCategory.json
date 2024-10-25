@@ -1,0 +1,36 @@
+[
+  {
+    "CategoryName": "Electronics",
+    "SubCategories": [
+      {
+        "CategoryName": "Mobile Phones",
+        "SubCategories": [
+          { "CategoryName": "Smartphones"},
+          { "CategoryName": "Feature Phones"}
+        ]
+      },
+      {
+        "CategoryName": "Computers",
+        "SubCategories": [
+          { "CategoryName": "Laptops"},
+          { "CategoryName": "Desktops"}
+        ]
+      }
+    ]
+  },
+  {
+    "CategoryName": "Home Appliances",
+    "SubCategories": [
+      {
+        "CategoryName": "Kitchen Appliances",
+        "SubCategories": [
+          { "CategoryName": "Microwaves"},
+          { "CategoryName": "Refrigerators"}
+        ]
+      },
+      {
+        "CategoryName": "Laundry Appliances"
+      }
+    ]
+  }
+]

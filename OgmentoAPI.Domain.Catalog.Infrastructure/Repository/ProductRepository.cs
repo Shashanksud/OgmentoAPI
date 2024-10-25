@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
-using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
@@ -49,7 +48,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 
 		public async Task<List<ProductModel>> GetAllProducts()
 		{
-			List<Product> products = _dbContext.Product.ToList();
+			List<Product> products = await _dbContext.Product.ToListAsync();
 			List<ProductModel> productModel = products.Select(x => new ProductModel
 			{
 				ProductId = x.ProductID,
@@ -67,7 +66,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 
 		public async Task<ProductModel> GetProduct(string sku)
 		{
-			Product product = _dbContext.Product.FirstOrDefault(x => x.SkuCode == sku);
+			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
 			if (product == null) {
 				throw new EntityNotFoundException($"Product {sku} not found.");
 			}
@@ -133,7 +132,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		}
 		public async Task UpdateProduct(AddProductModel productModel)
 		{
-			Product product = _dbContext.Product.FirstOrDefault(x => x.SkuCode == productModel.SkuCode);
+			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == productModel.SkuCode);
 			if(product == null)
 			{
 				throw new EntityNotFoundException($"Product {productModel.SkuCode} not found.");
@@ -151,9 +150,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			}
 			await _dbContext.ProductCategoryMapping.Where(x => x.ProductId == product.ProductID).ExecuteDeleteAsync();
 			List<int> categoryIds = new List<int>();
-			foreach (Guid categoryGuid in productModel.Categories)
+			foreach (Guid categoryUid in productModel.Categories)
 			{
-				categoryIds.Add(await _categoryServices.GetCategoryId(categoryGuid));
+				categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
 			}
 			await AddProductCategoryMapping(categoryIds,product.ProductID);
 			await UpdateProductImageMapping(productModel.Images, product.ProductID);
@@ -161,7 +160,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 
 		public async Task DeleteProduct(string sku)
 		{
-			Product product = _dbContext.Product.FirstOrDefault(x => x.SkuCode == sku);
+			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
 			if(product == null)
 			{
 				throw new EntityNotFoundException($"Product {sku} cannot be found.");
@@ -219,9 +218,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			if (productModel.Categories.Count!=0)
 			{
 				List<int> categoryIds = new List<int>();
-				foreach(Guid categoryGuid in productModel.Categories)
+				foreach(Guid categoryUid in productModel.Categories)
 				{
-					categoryIds.Add(await _categoryServices.GetCategoryId(categoryGuid));
+					categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
 				}
 				await AddProductCategoryMapping(categoryIds, productModel.ProductId);
 			}
@@ -257,7 +256,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 					MimeType = picture.MimeType,
 					BinaryData = Convert.FromBase64String(picture.Base64EncodedData)
 				});
-				int? productId = _dbContext.Product.FirstOrDefault(x => x.SkuCode == picture.SkuCode).ProductID;
+				int? productId = _dbContext.Product.FirstOrDefault(x => x.SkuCode == picture.SkuCode)?.ProductID;
 				if (productId == null) {
 					throw new EntityNotFoundException($"Product {picture.SkuCode} doesn't exist");
 				}
@@ -272,7 +271,6 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 					throw new DatabaseOperationException($"Unable to add {pictureModel.FileName}.");
 				}
 			}
-			
 		}
 	}
 }

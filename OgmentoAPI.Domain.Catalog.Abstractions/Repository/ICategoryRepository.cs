@@ -5,15 +5,15 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 {
 	public interface ICategoryRepository
 	{
-		public Task<int> GetCategoryIdAsync(Guid categoryUid);
-		public List<CategoryModel> GetSubCategories(int categoryId);
-		public Task<CategoryModel> GetCategory(Guid categoryUid);
-		public Task DeleteCategory(Guid categoryUid);
-		public Task UpdateCategory(Guid categoryUid, string categoryName);
-		public Task<CategoryModel> AddCategory(CategoryModel categoryModel);
-		public Task<CategoryModel> AddNewCategory(CategoryModel categoryModel);
-		public Task<List<CategoryModel>> GetAllCategories();
-		public Guid GetCategoryUid(int? categoryId);
-		public Task<CategoryModel> GetCategoryForProduct(Guid categoryUid);
+		Task<int?> GetCategoryIdAsync(Guid categoryUid);
+		Task<List<Category>> GetSubCategories(int categoryId);
+		Task<Category> GetCategory(int categoryId);
+		Task<int> DeleteCategories(List<int> categoryIds);
+		Task<int> UpdateCategory(Category category);
+		Task<(Category,int)> AddCategory(string categoryName, int parentCategoryId);
+		Guid? GetCategoryUid(int? categoryId);
+		bool CheckSubCategoriesExists(int categoryId);
+		bool IsSafeDelete(int categoryId);
+		bool CategoryAlreadyExists(string categoryName);
 	}
 }
