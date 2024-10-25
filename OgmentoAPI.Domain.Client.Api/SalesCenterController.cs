@@ -7,59 +7,32 @@ using OgmentoAPI.Domain.Client.Abstractions.Service;
 
 namespace OgmentoAPI.Domain.Client.Api
 {
-    [ApiController]
-    [Authorize]
-    [Route("api/[controller]")]
-    public class SalesCenterController : ControllerBase
-    {
-        private readonly ISalesCenterService _salesCenterService;
-        public SalesCenterController(ISalesCenterService _salesCenterService)
-        {
-            this._salesCenterService = _salesCenterService;
-        }
+	[ApiController]
+	[Authorize]
+	[Route("api/[controller]")]
+	public class SalesCenterController : ControllerBase
+	{
+		private readonly ISalesCenterService _salesCenterService;
+		public SalesCenterController(ISalesCenterService salesCenterService)
+		{
+			_salesCenterService = salesCenterService;
+		}
 
-        /*[HttpGet]
-        public IActionResult GetAllSalesCenters()
-        {
-            List<SalesCentersDto> response = _salesCenterService.GetAllSalesCenters().ToDto();
-            return Ok(response);
-        }*/
 		[HttpGet]
 		public IActionResult GetAllSalesCenters()
 		{
-			List<SalesCenterModel> result = _salesCenterService.GetAllSalesCenters();
-			List<SalesCentersDto> response = result.Adapt<List<SalesCentersDto>>();
-			return Ok(response);
+			var result = _salesCenterService.GetAllSalesCenters();
+			return Ok(result); 
 		}
-
-		/*[Route("UpdateMainSalesCenter")]
-        [HttpPost]
-		 public IActionResult UpdateMainSalesCenter(SalesCentersDto salesCentersDto)
-		 {
-			 int? response = _salesCenterService.UpdateMainSalesCenter(salesCentersDto.ToModel());
-			 return Ok(response);
-		 }*/
-
 		[Route("UpdateMainSalesCenter")]
 		[HttpPost]
 		public IActionResult UpdateMainSalesCenter(SalesCentersDto salesCentersDto)
 		{
-			SalesCenterModel model = salesCentersDto.Adapt<SalesCenterModel>();
-			int? response = _salesCenterService.UpdateMainSalesCenter(model);
+			var model = salesCentersDto.ToModel(); 
+			var response = _salesCenterService.UpdateMainSalesCenter(model);
 			return Ok(response);
 		}
 
-		/* [HttpPost]
-		 [Route("AddSalesCenter")]
-		  public IActionResult AddSalesCenter(SalesCenterModel salesCenterModel)
-		  {
-			  var result = _salesCenterService.AddSalesCenter(salesCenterModel);
-			  if (result.HasValue)
-			  {
-				  return Ok(result);
-			  }
-			  return BadRequest("Sales center already exists");
-		  }*/
 		[HttpPost]
 		[Route("AddSalesCenter")]
 		public IActionResult AddSalesCenter(SalesCentersDto salesCenterDto)
@@ -76,8 +49,9 @@ namespace OgmentoAPI.Domain.Client.Api
 		[HttpDelete]
 		public IActionResult DeleteSalesCenter(Guid salesCenterUid)
 		{
-			int? Response = _salesCenterService.DeleteSalesCenter(salesCenterUid);
-			return Ok(Response);
+			int? response = _salesCenterService.DeleteSalesCenter(salesCenterUid);
+			return Ok(response);
 		}
 	}
+
 }

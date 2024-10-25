@@ -5,15 +5,15 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 {
 	public static class KioskMapsterConfig
 	{
-		
-		public static KioskDto ToDto(this KioskModel kioskModel)
-		{
-			return kioskModel.Adapt<KioskDto>();
-		}
 
 		public static List<KioskDto> ToDto(this List<KioskModel> kioskModels)
 		{
 			return kioskModels.Adapt<List<KioskDto>>();
+		}
+
+		public static KioskDto ToDto(this KioskModel kioskModel)
+		{
+			return kioskModel.Adapt<KioskDto>();
 		}
 
 		public static KioskModel ToModel(this KioskDto kioskDto)
@@ -30,6 +30,6 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 			TypeAdapterConfig<KioskModel, KioskDto>.NewConfig();
 			TypeAdapterConfig<KioskDto, KioskModel>.NewConfig();
 		}
-	
+	    
 	}
 }
