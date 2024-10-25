@@ -211,10 +211,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				throw new DatabaseOperationException($"Product {productModel.SkuCode} not Added.");
 			}
 			productModel.ProductId = productEntry.Entity.ProductID;
-			if (productModel.Images.Count != 0)
-			{
-				await UpdateProductImageMapping(productModel.Images, productModel.ProductId);
-			}
+			
 			if (productModel.Categories.Count!=0)
 			{
 				List<int> categoryIds = new List<int>();
@@ -224,7 +221,11 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				}
 				await AddProductCategoryMapping(categoryIds, productModel.ProductId);
 			}
-			
+			if (productModel.Images.Count != 0)
+			{
+				await UpdateProductImageMapping(productModel.Images, productModel.ProductId);
+			}
+
 		}
 		public async Task UploadProducts(List<UploadProductModel> products)
 		{

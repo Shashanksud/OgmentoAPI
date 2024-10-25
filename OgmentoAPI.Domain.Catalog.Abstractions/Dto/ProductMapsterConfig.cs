@@ -9,12 +9,15 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Dto
 		public static void RegisterProductMappings()
 		{
 			TypeAdapterConfig<ProductModel, ProductDto>.NewConfig();
-			TypeAdapterConfig<PictureDto, PictureModel>.NewConfig();
+			TypeAdapterConfig<PictureDto, PictureModel>.NewConfig().Map(dest => dest.BinaryData, src=> Convert.FromBase64String(src.Base64Encoded));
 			TypeAdapterConfig<CategoryModel,CategoryDto>.NewConfig();
-			TypeAdapterConfig<ProductDto, ProductModel>.NewConfig();
-			TypeAdapterConfig<AddProductDto, AddProductModel>.NewConfig();
+            TypeAdapterConfig<ProductDto, ProductModel>.NewConfig();
 
-		}
+            TypeAdapterConfig<AddProductDto, AddProductModel>.NewConfig();
+            TypeAdapterConfig<PictureModel, PictureDto>.NewConfig().Map(dest => dest.Base64Encoded, src => Convert.ToBase64String(src.BinaryData));
+
+
+        }
 
 		public static List<ProductDto> ToDto(this List<ProductModel> productModels)
 		{
