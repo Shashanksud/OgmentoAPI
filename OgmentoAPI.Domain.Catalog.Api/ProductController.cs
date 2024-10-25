@@ -86,7 +86,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		}
 
 		[HttpGet]
-		[Route("SampleCsv")]
+		[Route("sample")]
 		public async Task<IActionResult> DownloadCsvProductSample()
 		{
 			string sampleCsvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, sampleCsvRelativePath);

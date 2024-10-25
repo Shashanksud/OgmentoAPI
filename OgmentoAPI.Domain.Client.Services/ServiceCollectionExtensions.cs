@@ -14,7 +14,9 @@ namespace OgmentoAPI.Domain.Client.Services
             return services.AddDbContext<ClientDBContext>(opts => opts.UseSqlServer(dbConnectionString))
                            .AddTransient<ISalesCenterService, SalesCenterService>()
                            .AddTransient<IKioskService,KioskService>()
-                             .AddTransient<IKioskRepository,KioskRepository>()
+                           .AddTransient<IKioskRepository,KioskRepository>()
+						   .AddTransient<IPlanogramService,PlanogramService>()
+						   .AddTransient<IPlanogramRepository,PlanogramRepository>()
                            .AddTransient<ISalesCenterRepository, SalesCenterRepository>();
         }
     }

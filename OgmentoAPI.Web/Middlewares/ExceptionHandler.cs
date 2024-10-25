@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
 using OgmentoAPI.Domain.Common.Abstractions;
 using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
@@ -42,11 +40,12 @@ namespace OgmentoAPI.Middlewares
 
             ExceptionResponse response = exception switch
             {
+				ValidationException _ => new ExceptionResponse(nameof(ValidationException), HttpStatusCode.InternalServerError, exception.Message),
 				DatabaseOperationException _ => new ExceptionResponse(nameof(DatabaseOperationException),HttpStatusCode.InternalServerError, exception.Message),
 				EntityNotFoundException _ => new ExceptionResponse(nameof(EntityNotFoundException), HttpStatusCode.NotFound, exception.Message),
 				InvalidOperationException _ => new ExceptionResponse(nameof(InvalidOperationException), HttpStatusCode.BadRequest, exception.Message),
 				InvalidDataException _ => new ExceptionResponse(nameof(InvalidDataException), HttpStatusCode.BadRequest,exception.Message),
-                ApplicationException _ => new ExceptionResponse(nameof(ApplicationException), HttpStatusCode.BadRequest, "Application exception occurred."),
+                ApplicationException _ => new ExceptionResponse(nameof(ApplicationException), HttpStatusCode.BadRequest,exception.Message),
                 KeyNotFoundException _ => new ExceptionResponse(nameof(KeyNotFoundException), HttpStatusCode.NotFound, exception.Message),
                 UnauthorizedAccessException _ => new ExceptionResponse(nameof(UnauthorizedAccessException), HttpStatusCode.Unauthorized, "Unauthorized user."),
                 _ => new ExceptionResponse("InternalException", HttpStatusCode.InternalServerError, "Internal server error. Please retry later.")

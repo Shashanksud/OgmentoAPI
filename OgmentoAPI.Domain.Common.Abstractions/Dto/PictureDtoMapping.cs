@@ -8,7 +8,7 @@ namespace OgmentoAPI.Domain.Common.Abstractions.Dto
 		{
 			return new PictureDto()
 			{
-				BinaryData = picture.BinaryData,
+				Base64Encoded = Convert.ToBase64String(picture.BinaryData),
 				FileName = picture.FileName,
 				MimeType = picture.MimeType,
 				Hash = picture.Hash,
@@ -20,7 +20,7 @@ namespace OgmentoAPI.Domain.Common.Abstractions.Dto
 		{
 			return new PictureModel()
 			{
-				BinaryData = picture.BinaryData,
+				BinaryData = Convert.FromBase64String(picture.Base64Encoded),
 				FileName = picture.FileName,
 				MimeType = picture.MimeType,
 				Hash = picture.Hash,
