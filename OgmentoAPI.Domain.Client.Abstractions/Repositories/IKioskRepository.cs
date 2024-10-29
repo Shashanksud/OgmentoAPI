@@ -1,4 +1,5 @@
-﻿using OgmentoAPI.Domain.Client.Abstractions.Models;
+﻿using OgmentoAPI.Domain.Client.Abstractions.DataContext;
+using OgmentoAPI.Domain.Client.Abstractions.Models;
 
 namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 {
@@ -9,5 +10,7 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 		public Task DeleteKioskByName(string kioskName);
 		List<KioskModel> GetKioskDetails(List<int> salesCenterIds);
 		public Task AddKiosk(KioskModel kioskModel);
+		Task<int?> GetKioskId(string kioskName);
+		Task<Kiosk> GetKiosk(int kioskId);
 	}
 }

@@ -13,7 +13,25 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		{
 			_dbContext = dbContext;
 		}
-		public async Task<List<int>> GetImages(int productId)
+		public async Task<ProductBase> GetProduct(int productId)
+		{
+			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.ProductID == productId);
+			if(product == null)
+			{
+				throw new DatabaseOperationException("Product not found in database");
+			}
+			return new ProductBase
+			{
+				ProductName = product.ProductName,
+				ProductDescription = product.ProductDescription,
+				Price = product.Price,
+				LoyaltyPoints = product.LoyaltyPoints.Value,
+				SkuCode = product.SkuCode,
+				ExpiryDate = product.ExpiryDate,
+				Weight = product.Weight,
+			};
+		}
+		public async Task<List<PictureModel>> GetImages(int productId)
 		{
 			return await _dbContext.ProductImageMapping.Where(x => x.ProductId == productId).Select(x => x.ImageId).ToListAsync();
 		}

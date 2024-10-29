@@ -10,6 +10,8 @@ using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 using OgmentoAPI.Domain.Common.Abstractions.Dto;
 using OgmentoAPI.Domain.Common.Abstractions.Models;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
+using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
+using System.Globalization;
 
 namespace OgmentoAPI.Domain.Catalog.Services
 {
@@ -134,6 +136,10 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			{
 				throw new ValidationException($"Product with skucode: {productModel.SkuCode} already exists. Please give different code.");
 			}
+		public async Task<ProductBase> GetProduct(int productId)
+		{
+			return await _productRepository.GetProduct(productId);
+		}
 
 			Product product = new Product()
 			{

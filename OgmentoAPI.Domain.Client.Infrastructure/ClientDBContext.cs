@@ -10,6 +10,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure
         public DbSet<SalesCenterUserMapping> SalesCenterUserMapping { get; set; }
 		
         public DbSet<Kiosk> Kiosk { get; set; }
+		public DbSet<Planogram> Planogram { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SalesCenter>()

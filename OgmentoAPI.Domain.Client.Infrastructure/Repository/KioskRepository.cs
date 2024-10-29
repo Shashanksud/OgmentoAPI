@@ -1,4 +1,5 @@
-﻿using OgmentoAPI.Domain.Client.Abstractions.DataContext;
+﻿using Microsoft.EntityFrameworkCore;
+using OgmentoAPI.Domain.Client.Abstractions.DataContext;
 using OgmentoAPI.Domain.Client.Abstractions.Models;
 using OgmentoAPI.Domain.Client.Abstractions.Repositories;
 using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
@@ -79,11 +80,11 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		public async Task AddKiosk(KioskModel kioskModel)
 		{
 			bool isExists = _context.Kiosk.Any(x => x.KioskName == kioskModel.KioskName
-	  && x.SalesCenterId == kioskModel.SalesCenterId);
+												&& x.SalesCenterId == kioskModel.SalesCenterId);
 			if (isExists)
 			{
 				throw new InvalidDataException($"Kiosk Already Exists with name {kioskModel.KioskName}.");
-	}
+			}
 			Kiosk kiosk = new Kiosk()
 			{
 				KioskName = kioskModel.KioskName,
@@ -96,7 +97,15 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			if (rowsAdded == 0)
 			{
 				throw new DatabaseOperationException("Unable to add Kiosk.");
-}
+			}
+		}
+		public async Task<int?> GetKioskId(string kioskName)
+		{
+			return (await _context.Kiosk.SingleOrDefaultAsync(x => x.KioskName == kioskName))?.ID;
+		}
+		public async Task<Kiosk> GetKiosk(int kioskId)
+		{
+			return await _context.Kiosk.SingleAsync(x => x.ID == kioskId);
 		}
 	}
 }

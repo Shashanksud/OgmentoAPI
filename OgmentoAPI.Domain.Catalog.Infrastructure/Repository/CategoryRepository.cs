@@ -66,6 +66,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			{
 				throw new DatabaseOperationException($"Error occurred while Updating category: {ex}");
 			}
+			
 		}
 		public async Task<(Category,int)> AddCategory(string categoryName, int parentCategoryId)
 		{
@@ -85,7 +86,8 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			{
 				throw new DatabaseOperationException($"Error occurred while Adding category: {ex}");
 			}
-
+			
+		
 		}
 		public bool CategoryAlreadyExists(string categoryName) {
 			return _dbContext.Category.Any(x => x.CategoryName.ToLower() == categoryName.ToLower());

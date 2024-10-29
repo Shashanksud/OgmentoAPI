@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OgmentoAPI.Domain.Client.Abstractions.DataContext;
 using OgmentoAPI.Domain.Client.Abstractions.Dto;
 using OgmentoAPI.Domain.Client.Abstractions.Service;
 
@@ -20,5 +19,11 @@ namespace OgmentoAPI.Domain.Client.Api
 		//	int response = await _planogramService.AddPOG(kioskPogDto.ToModel());
 		//	return Ok(response);
 		//}
+		[HttpGet]
+		[Route("{kioskName}")]
+		public async Task<IActionResult> GetPOG(string kioskName)
+		{
+			return Ok((await _planogramService.GetPOG(kioskName)).ToDto());
+		}
 	}
 }

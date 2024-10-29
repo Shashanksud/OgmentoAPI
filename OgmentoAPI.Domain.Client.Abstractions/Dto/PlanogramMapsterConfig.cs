@@ -1,0 +1,92 @@
+﻿using Mapster;
+using OgmentoAPI.Domain.Client.Abstractions.Models;
+
+namespace OgmentoAPI.Domain.Client.Abstractions.Dto
+{
+	public static class PlanogramMapsterConfig
+	{
+		public static void RegisterPlanogramMappings()
+		{
+			TypeAdapterConfig<PlanogramModel, PlanogramDto>.NewConfig();
+			TypeAdapterConfig<PlanogramDto, PlanogramModel>.NewConfig();
+			TypeAdapterConfig<MachinePogModel, MachinePogDto>.NewConfig();
+			TypeAdapterConfig<MachinePogDto, MachinePogModel>.NewConfig();
+			TypeAdapterConfig<TrayPogModel, TrayPogDto>.NewConfig();
+			TypeAdapterConfig<TrayPogDto, TrayPogModel>.NewConfig();
+			TypeAdapterConfig<BeltPogModel, BeltPogDto>.NewConfig();
+			TypeAdapterConfig<BeltPogDto, BeltPogModel>.NewConfig();
+			TypeAdapterConfig<ProductPogModel, ProductPogDto>.NewConfig();
+			TypeAdapterConfig<ProductPogDto, ProductPogModel>.NewConfig();
+		}
+
+		public static PlanogramDto ToDto(this PlanogramModel planogramModel)
+		{
+			return planogramModel.Adapt<PlanogramDto>();
+		}
+
+		public static PlanogramModel ToModel(this PlanogramDto planogramDto)
+		{
+			return planogramDto.Adapt<PlanogramModel>();
+		}
+		public static MachinePogDto ToDto(this MachinePogModel machinePogModel)
+		{
+			return machinePogModel.Adapt<MachinePogDto>();
+		}
+		public static List<MachinePogDto> ToDto(this List<MachinePogModel> machinePogModels)
+		{
+			return machinePogModels.Adapt<List<MachinePogDto>>();
+		}
+		public static MachinePogModel ToModel(this MachinePogDto machinePogDto)
+		{
+			return machinePogDto.Adapt<MachinePogModel>();
+		}
+		public static List<MachinePogModel> ToModel(this List<MachinePogDto> machinePogDtos)
+		{
+			return machinePogDtos.Adapt<List<MachinePogModel>>();
+		}
+		public static TrayPogDto ToDto(this TrayPogModel trayPogModel)
+		{
+			return trayPogModel.Adapt<TrayPogDto>();
+		}
+		public static List<TrayPogDto> ToDto(this List<TrayPogModel> trayPogModels)
+		{
+			return trayPogModels.Adapt<List<TrayPogDto>>();
+		}
+
+		public static TrayPogModel ToModel(this TrayPogDto trayPogDto)
+		{
+			return trayPogDto.Adapt<TrayPogModel>();
+		}
+		public static List<TrayPogModel> ToModel(this List<TrayPogDto> trayPogDtos)
+		{
+			return trayPogDtos.Adapt<List<TrayPogModel>>();
+		}
+		public static BeltPogDto ToDto(this BeltPogModel beltPogModel)
+		{
+			return beltPogModel.Adapt<BeltPogDto>();
+		}
+		public static List<BeltPogDto> ToDto(this List<BeltPogModel> beltPogModels)
+		{
+			return beltPogModels.Adapt<List<BeltPogDto>>();
+		}
+		public static BeltPogModel ToModel(this BeltPogDto beltPogDto)
+		{
+			return beltPogDto.Adapt<BeltPogModel>();
+		}
+		public static List<BeltPogModel> ToModel(this List<BeltPogDto> beltPogDtos)
+		{
+			return beltPogDtos.Adapt<List<BeltPogModel>>();
+		}
+
+		public static ProductPogDto ToDto(this ProductPogModel productPogModel)
+		{
+			return productPogModel.Adapt<ProductPogDto>();
+		}
+
+		public static ProductPogModel ToModel(this ProductPogDto productPogDto)
+		{
+			return productPogDto.Adapt<ProductPogModel>();
+		}
+		
+	}
+}

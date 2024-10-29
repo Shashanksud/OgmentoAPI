@@ -62,6 +62,24 @@ namespace OgmentoAPI.Domain.Client.Services
 			kioskModel.SalesCenterId = _salesCenterService.GetSalesCenterDetail(kioskModel.SalesCenter.Item1).ID;
 		  	await _kioskRepository.AddKiosk(kioskModel);
 		}
-
+		public async Task<int?> GetKioskId(string kioskName)
+		{
+			return await _kioskRepository.GetKioskId(kioskName);
+		}
+		public async Task<KioskModel> GetKiosk(int kioskId)
+		{
+			Kiosk kiosk = await _kioskRepository.GetKiosk(kioskId);
+			KioskModel kioskModel = new KioskModel
+			{
+				ID = kioskId,
+				IsActive = kiosk.IsActive,
+				KioskName = kiosk.KioskName,
+				IsDeleted = kiosk.IsDeleted,
+				SalesCenterId = kiosk.SalesCenterId,
+			};
+			SalesCenterModel kioskSalesCenter = await _salesCenterService.GetSalesCenter(kiosk.SalesCenterId);
+			kioskModel.SalesCenter = Tuple.Create(kioskSalesCenter.SalesCenterUid, kioskSalesCenter.SalesCenterName);
+			return kioskModel;
+		}
 	}
 }

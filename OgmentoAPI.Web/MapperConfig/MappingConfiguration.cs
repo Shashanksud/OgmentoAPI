@@ -15,6 +15,7 @@ namespace OgmentoAPI.MapperConfig
 			SalesCentersMapsterConfig.RegisterSalesCentersMappings();
 			ProductMapsterConfig.RegisterProductMappings();
 			CategoryMapsterConfig.RegisterCategoryMappings();
+			PlanogramMapsterConfig.RegisterPlanogramMappings();
 		}
 	}
 

@@ -23,7 +23,7 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 		int? AddSalesCenter(SalesCentersDto salesCenterDto);
 
 		 void DeleteSalesCenterUserMapping(int userId);
-
+		Task<SalesCenter> GetSalesCenter(int salesCenterId);
 
 
 	}

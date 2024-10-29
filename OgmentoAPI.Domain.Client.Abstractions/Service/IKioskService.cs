@@ -10,6 +10,8 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Service
 
 		Task DeleteKioskByName(string kioskName);
 		Task AddKiosk(KioskModel kioskModel);
+		Task<int?> GetKioskId(string kioskName);
+		Task<KioskModel> GetKiosk(int kioskId);
 	}
 
 }

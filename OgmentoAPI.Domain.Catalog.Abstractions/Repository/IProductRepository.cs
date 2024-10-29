@@ -23,5 +23,6 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 		Task<int> AddProductImageMapping(List<ProductImageMapping> productImageMappings);
 		Task<List<int>> GetProductImageMappings(int productId);
 		Task<ProductUploads> GetProductUploads(String sku);
+		Task<ProductBase> GetProduct(int productId);
 	}
 }

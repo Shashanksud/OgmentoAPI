@@ -107,4 +107,33 @@ namespace OgmentoAPI.Domain.Client.Services
 
 
 	}
+        public SalesCenter GetSalesCenterDetail(Guid salesCenterUid)
+        {
+            return _salesCenterRepository.GetSalesCenterDetail(salesCenterUid);
+        }
+        //public int GetUserSalesCenterMappingId(Guid salesCenterUid)
+        //{
+        //    {
+        //        try
+        //        {
+        //         return   _salesCenterRepository.GetUserSalesCenterMappingId(salesCenterUid);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw ex;
+        //        }
+        //    }
+        //}
+		public async Task<SalesCenterModel> GetSalesCenter(int salesCenterId)
+		{
+			SalesCenter salesCenter = await _salesCenterRepository.GetSalesCenter(salesCenterId);
+			return new SalesCenterModel
+			{
+				SalesCenterName = salesCenter.SalesCenterName,
+				SalesCenterUid = salesCenter.SalesCenterUid,
+				City = salesCenter.City,
+				CountryId = salesCenter.CountryId,
+			};
+		}
+    }
 }
