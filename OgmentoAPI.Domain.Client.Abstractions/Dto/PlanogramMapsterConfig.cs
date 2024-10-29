@@ -1,5 +1,6 @@
 ﻿using Mapster;
-using OgmentoAPI.Domain.Client.Abstractions.Models;
+using OgmentoAPI.Domain.Client.Abstractions.Dto.Planogram;
+using OgmentoAPI.Domain.Client.Abstractions.Models.Planogram;
 
 namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 {
@@ -17,8 +18,29 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 			TypeAdapterConfig<BeltPogDto, BeltPogModel>.NewConfig();
 			TypeAdapterConfig<ProductPogModel, ProductPogDto>.NewConfig();
 			TypeAdapterConfig<ProductPogDto, ProductPogModel>.NewConfig();
+			TypeAdapterConfig<AddPogModel, AddPogDto>.NewConfig();
+			TypeAdapterConfig<AddPogDto, AddPogModel>.NewConfig();
+			TypeAdapterConfig<DeletePogModel, DeletePogDto>.NewConfig();
+			TypeAdapterConfig<DeletePogDto, DeletePogModel>.NewConfig();
+		}
+		public static AddPogDto ToDto(this AddPogModel addPogModel)
+		{
+			return addPogModel.Adapt<AddPogDto>();
 		}
 
+		public static AddPogModel ToModel(this AddPogDto addPogDto)
+		{
+			return addPogDto.Adapt<AddPogModel>();
+		}
+		public static DeletePogDto ToDto(this DeletePogModel deletePogModel)
+		{
+			return deletePogModel.Adapt<DeletePogDto>();
+		}
+
+		public static DeletePogModel ToModel(this DeletePogDto deletePogDto)
+		{
+			return deletePogDto.Adapt<DeletePogModel>();
+		}
 		public static PlanogramDto ToDto(this PlanogramModel planogramModel)
 		{
 			return planogramModel.Adapt<PlanogramDto>();

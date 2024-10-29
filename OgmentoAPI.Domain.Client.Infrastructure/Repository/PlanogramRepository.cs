@@ -1,7 +1,7 @@
 ﻿using OgmentoAPI.Domain.Client.Abstractions.Repositories;
 using Microsoft.EntityFrameworkCore;
 using OgmentoAPI.Domain.Client.Abstractions.DataContext;
-using OgmentoAPI.Domain.Client.Abstractions.Models;
+using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 {
 	public class PlanogramRepository : IPlanogramRepository
@@ -11,7 +11,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		{
 			_dbContext = dbContext;
 		}
-		public async Task<List<int>> GetMachineIds(int kioskId)
+		public List<int> GetMachineIds(int kioskId)
 		{
 			return  _dbContext.Planogram
 				.AsNoTracking()
@@ -20,7 +20,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 				.Distinct()
 				.ToList();
 		}
-		public async Task<List<(int,bool)>> GetTrayIds(int kioskId,int machineId)
+		public List<(int,bool)> GetTrayIds(int kioskId,int machineId)
 		{
 			List<Planogram> planograms = _dbContext.Planogram
 					.AsNoTracking()
@@ -37,7 +37,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			}
 			return trayData;
 		}
-		public async Task<List<(int,bool)>> GetBeltIds(int kioskId,int machineId, int trayId) {
+		public List<(int,bool)> GetBeltIds(int kioskId,int machineId, int trayId) {
 			List<Planogram> planograms = _dbContext.Planogram
 				.AsNoTracking()
 				.Where(x => x.KioskId == kioskId && x.MachineId == machineId && x.TrayId == trayId)
@@ -54,10 +54,70 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 			}
 			return beltData;
 		}
-		public async Task<Planogram> GetProduct(int kioskId, int machineId, int trayId, int beltId)
+		public async Task<Planogram?> GetPlanogram(int kioskId, int machineId, int trayId, int beltId)
 		{
-			return await _dbContext.Planogram.SingleAsync(x => x.KioskId == kioskId && x.MachineId == machineId && x.TrayId == trayId && x.BeltId == beltId);
+			return await _dbContext.Planogram.SingleOrDefaultAsync(x => x.KioskId == kioskId && x.MachineId == machineId && x.TrayId == trayId && x.BeltId == beltId);
 		}
 
+		public async Task<int> AddPOG(Planogram planogram)
+		{
+			try
+			{
+				_dbContext.Planogram.Add(planogram);
+				return await _dbContext.SaveChangesAsync();
+			}catch(DbUpdateException ex)
+			{
+				throw new DatabaseOperationException($"error occurred while adding planogram: {ex}");
+			}
+		}
+		public async Task<int> UpdatePOG(Planogram planogram)
+		{
+			try
+			{
+				_dbContext.Planogram.Update(planogram);
+				return await _dbContext.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw new DatabaseOperationException($"error occurred while updating planogram: {ex}");
+			}
+		}
+
+		public bool IsPlanogramExists(int kioskId, int machineId, int trayId, int beltId)
+		{
+			return _dbContext.Planogram.Any(x => x.KioskId == kioskId && x.MachineId == machineId && x.TrayId == trayId && x.BeltId == beltId);
+		}
+		public async Task<int> DeleteBelt(Planogram planogram)
+		{
+			try
+			{
+				_dbContext.Planogram.Remove(planogram);
+				return await _dbContext.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw new DatabaseOperationException($"error occurred while deleting planogram: {ex}");
+			}
+		}
+		public async Task<int> DeletePlanograms(List<int> planogramIds)
+		{
+			try
+			{
+				return await _dbContext.Planogram.Where(x => planogramIds.Contains(x.PlanogramId)).ExecuteDeleteAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw new DatabaseOperationException($"error occurred while deleting planogram: {ex}");
+			}
+		}
+
+		public async Task<List<Planogram>> GetPlanogram(int kioskId, int machineId, int trayId)
+		{
+			return await _dbContext.Planogram.Where(x => x.KioskId == kioskId && x.MachineId == machineId && x.TrayId == trayId).ToListAsync();
+		}
+		public async Task<List<Planogram>> GetPlanogram(int kioskId, int machineId)
+		{
+			return await _dbContext.Planogram.Where(x => x.KioskId == kioskId && x.MachineId == machineId).ToListAsync();
+		}
 	}
 }

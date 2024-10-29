@@ -1,5 +1,4 @@
-﻿
-namespace OgmentoAPI.Domain.Client.Abstractions.Dto
+﻿namespace OgmentoAPI.Domain.Client.Abstractions.Dto.Planogram
 {
 	public class MachinePogDto
 	{

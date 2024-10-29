@@ -118,5 +118,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		{
 			return await _dbContext.ProductUploads.FirstAsync(x=>x.Sku == sku);
 		}
+		public async Task<int?> GetProductId(string sku)
+		{
+			return (await _dbContext.Product.SingleOrDefaultAsync(x => x.SkuCode == sku))?.ProductID;
+		}
 	}
 }

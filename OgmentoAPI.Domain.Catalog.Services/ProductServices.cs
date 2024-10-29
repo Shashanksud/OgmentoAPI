@@ -29,6 +29,16 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			_categoryServices = categoryServices;
 		}
 		private async Task<List<PictureModel>> GetImages(int productId)
+		public async Task<int> GetProductId(string sku)
+		{
+			int? productId = await _productRepository.GetProductId(sku);
+			if(!productId.HasValue)
+			{
+				throw new EntityNotFoundException($"{sku} not found in database");
+			}
+			return productId.Value;
+		}
+		public async Task<ProductModel> AddProduct(AddProductModel product)
 		{
 			List<int> pictureIds = await _productRepository.GetImages(productId);
 			List<PictureModel> pictureModels = await _pictureServices.GetPictures(pictureIds);

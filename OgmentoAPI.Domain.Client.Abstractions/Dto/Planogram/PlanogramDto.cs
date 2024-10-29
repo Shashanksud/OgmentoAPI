@@ -1,6 +1,6 @@
 ﻿using OgmentoAPI.Domain.Client.Abstractions.Models;
 
-namespace OgmentoAPI.Domain.Client.Abstractions.Dto
+namespace OgmentoAPI.Domain.Client.Abstractions.Dto.Planogram
 {
 	public class PlanogramDto
 	{
