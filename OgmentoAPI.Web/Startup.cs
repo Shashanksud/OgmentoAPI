@@ -24,6 +24,8 @@ using OgmentoAPI.Domain.Authorization.Abstractions.Dto;
 using OgmentoAPI.Domain.Client.Abstractions.Dto;
 using System;
 using OgmentoAPI.MapperConfig;
+using Azure.Storage.Queues;
+using Microsoft.Extensions.Options;
 
 
 namespace OgmentoAPI.Web
@@ -49,6 +51,12 @@ namespace OgmentoAPI.Web
 					   var appSettingsSection = Configuration.GetSection("ServiceConfiguration");
 			services.Configure<ServiceConfiguration>(appSettingsSection);
 			services.Configure<FilePaths>(Configuration.GetSection("FilePaths"));
+			services.Configure<AzureQueue>(Configuration.GetSection("AzureQueue"));
+			services.AddSingleton<QueueClient>(provider =>
+			 {
+				 AzureQueue azureQueue = provider.GetRequiredService<IOptions<AzureQueue>>().Value;
+				 return new QueueClient(azureQueue.ConnectionString, azureQueue.QueueName);
+			 });
 			string dbConnectionString = Configuration["ConnectionString:DefaultConnection"];
 			services.AddAuth(dbConnectionString)
 					.AddClient(dbConnectionString)

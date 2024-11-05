@@ -1,6 +1,9 @@
-﻿using CsvHelper;
+﻿using Azure.Storage.Queues.Models;
+using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs;
+using Microsoft.EntityFrameworkCore;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
@@ -13,9 +16,11 @@ namespace OgmentoAPI.Domain.Catalog.Services
 	public class ProductServices: IProductServices
 	{
 		private readonly IProductRepository _productRepository;
-		public ProductServices(IProductRepository productRepository)
+		private readonly IAzureQueueService _azureQueueService;
+		public ProductServices(IProductRepository productRepository, IAzureQueueService azureQueueService)
 		{
 			_productRepository = productRepository;
+			_azureQueueService = azureQueueService;
 		}
 		public async Task<ProductModel> AddProduct(AddProductModel product)
 		{
@@ -46,9 +51,15 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			await CatalogHelper.UploadCsvFile<UploadPictureModel, UploadPictureModelMap>(csvFile, _productRepository.UploadPictures);
 		}
 
-		public async Task UploadProducts(IFormFile csvFile)
+		public async Task<List<FailedProductUpload>> UploadProducts(IFormFile csvFile)
 		{
 			await CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(csvFile, _productRepository.UploadProducts);
+			return await _productRepository.GetFailedUploads();
 		}
+		public async Task AddProduct(UploadProductModel product)
+		{
+			await _productRepository.AddProduct(product);
+		}
+		
 	}
 }
