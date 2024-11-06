@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OgmentoAPI.Domain.Catalog.Infrastructure\OgmentoAPI.Domain.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\OgmentoAPI.Domain.Common.Services\OgmentoAPI.Domain.Common.Services.csproj" />
   </ItemGroup>
 
 </Project>

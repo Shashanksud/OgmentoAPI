@@ -1,5 +1,6 @@
 ﻿using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Common.Abstractions.Models;
+using System.Reflection.Metadata;
 
 namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 {
@@ -13,7 +14,6 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 		Task AddProduct(AddProductModel productModel);
 		Task UploadProducts(List<UploadProductModel> products);
 		Task UploadPictures(List<UploadPictureModel> pictures);
-		Task<List<FailedProductUpload>> GetFailedUploads();
-		Task AddProduct(UploadProductModel product);
+		Task DeletePictureProductMapping(int pictureId);
 	}
 }
