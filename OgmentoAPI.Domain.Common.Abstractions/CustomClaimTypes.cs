@@ -12,5 +12,6 @@ namespace OgmentoAPI.Domain.Common.Abstractions
         public const string UserName = "UserName";
         public const string Role = "Role";
         public const string Jti = JwtRegisteredClaimNames.Jti;
+		public const string SecurityStamp = "SecurityStamp";
     }
 }

@@ -21,6 +21,7 @@ namespace OgmentoAPI.Domain.Authorization.Abstractions.DataContext
         public DateTime CreatedOn { get; set; }
         public DateTime UpdatedOn { get; set; }
         public int? ValidityDays { get; set; }
+		public Guid SecurityStamp { get; set; }
         public virtual ICollection<RefreshToken> RefreshToken { get; set; }
         public virtual RolesMaster UserRole { get; set; }
       

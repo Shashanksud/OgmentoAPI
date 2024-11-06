@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OgmentoAPI.Domain.Authorization.Abstractions.DataContext;
 using OgmentoAPI.Domain.Authorization.Abstractions.Enums;
 using OgmentoAPI.Domain.Authorization.Abstractions.Models;
@@ -47,7 +48,10 @@ namespace OgmentoAPI.Domain.Authorization.Infrastructure.Repository
         {
             return _context.UsersMaster.FirstOrDefault(c => c.Email == login.Email && c.Password == login.Password);
         }
-
+		public async Task<Guid?> GetSecurityStamp(int userId)
+		{
+			return (await _context.UsersMaster.FirstOrDefaultAsync(c => c.UserId == userId))?.SecurityStamp;
+		}
         public List<UserModel> GetUserDetails()
         {
             return  _context.UsersMaster.Select(UM=> new UserModel
@@ -107,29 +111,36 @@ namespace OgmentoAPI.Domain.Authorization.Infrastructure.Repository
 				throw new DatabaseOperationException("Unable to save user");
 			}
             return entity.Entity.UserId;
-		}
-		public bool DeleteUserDetails(Guid userUId)
-		{
-			int noOfRowsDeleted = 0;
-			UsersMaster usersMaster = _context.UsersMaster.FirstOrDefault(user => user.UserUid == userUId);
-			if (usersMaster != null)
-			{
-				_context.UsersMaster.Remove(usersMaster);
-				noOfRowsDeleted = _context.SaveChanges();
+        }
+        public bool DeleteUserDetails(Guid userUId)
+        {
+            int noOfRowsDeleted = 0;
+            UsersMaster usersMaster = _context.UsersMaster.FirstOrDefault(user => user.UserUid == userUId);
+            if (usersMaster != null)
+            {
+                _context.UsersMaster.Remove(usersMaster);
+                noOfRowsDeleted = _context.SaveChanges();
 
-			}
-			if (noOfRowsDeleted > 0)
-			{
-				return true;
-			}
-			return false;
-		}
+            }
+            if (noOfRowsDeleted > 0)
+            {
+                return true;
+            }
+            return false;
+        }
 		public int? GetUserId(Guid userUId)
 		{
 			int? userId = _context.UsersMaster.FirstOrDefault(x => x.UserUid == userUId).UserId;
 			return userId;
 		}
 
+		public async Task UpdateSecurityStamp(Guid securityStamp, int userId)
+		{
+			UsersMaster user = await _context.UsersMaster.SingleAsync(x => x.UserId == userId);
+			user.SecurityStamp = securityStamp;
+			_context.UsersMaster.Update(user);
+			await _context.SaveChangesAsync();
+		}
 	}
 }
 

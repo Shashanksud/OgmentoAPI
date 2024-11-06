@@ -152,7 +152,8 @@ namespace OgmentoAPI.Web
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseStaticFiles();
-			
+			app.UseMiddleware<SecurityStampValidationHandler>();
+
 			
 
 			app.UseEndpoints(endpoints =>

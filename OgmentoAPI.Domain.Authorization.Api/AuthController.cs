@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OgmentoAPI.Domain.Authorization.Abstractions.Models;
 using OgmentoAPI.Domain.Authorization.Abstractions.Services;
 
@@ -31,7 +32,14 @@ namespace OgmentoAPI.Domain.Authorization.Api
             //return Ok(result);
             return Ok();
         }
-
+		[HttpPost]
+		[Route("logout")]
+		[Authorize]
+		public async Task<IActionResult> LogoutAsync()
+		{
+			await _identityService.LogoutAsync(User);
+			return Ok();
+		}
     }
 }
 

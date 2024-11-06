@@ -17,6 +17,9 @@ namespace OgmentoAPI.Domain.Authorization.Abstractions.Repository
 		bool DeleteUserDetails(Guid userUId);
 		int? GetUserId(Guid userUId);
 
+		Task UpdateSecurityStamp(Guid securityStamp, int userId);
+		Task<Guid?> GetSecurityStamp(int userId);
+
 	}
 
 }
