@@ -48,17 +48,17 @@ namespace AzureFunctionApp.Functions
 			response.EnsureSuccessStatusCode();
 
 			string responseContent = await response.Content.ReadAsStringAsync();
-			TokenModel tokenModel = JsonSerializer.Deserialize<TokenModel>(responseContent);
 
-			_authToken = tokenModel.Token;
+			_authToken = responseContent;
 			_tokenExpiryTime = DateTime.UtcNow.AddMinutes(45);
 		}
 
 		private async Task UploadProductAsync(UploadProductModel product, string authToken)
 		{
-			StringContent content = new StringContent(JsonSerializer.Serialize(product), System.Text.Encoding.UTF8, "application/json");
+			
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
-
+			string jsonString = JsonSerializer.Serialize(product);
+			StringContent content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
 			string uploadProductUrl = _configuration["UploadProductUrl"];
 			HttpResponseMessage response = await _httpClient.PostAsync(uploadProductUrl, content);
 			response.EnsureSuccessStatusCode();

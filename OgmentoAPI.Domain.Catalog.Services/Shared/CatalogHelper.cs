@@ -10,17 +10,25 @@ namespace OgmentoAPI.Domain.Catalog.Services.Shared
 	{
 		public static async Task UploadCsvFile<SourceModel, TargetModel>(IFormFile csvFile, Func<List<SourceModel>, Task> uploadFunction) where TargetModel : ClassMap<SourceModel>
 		{
-			CsvConfiguration csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+			try
 			{
-				Delimiter = typeof(SourceModel) == typeof(UploadPictureModel) ? "," : ";"
-			};
+				CsvConfiguration csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+				{
+					Delimiter = typeof(SourceModel) == typeof(UploadPictureModel) ? "," : ";",
+					TrimOptions = TrimOptions.Trim,
+					BadDataFound = null,
+				};
 
-			using (StreamReader csvStreamReader = new StreamReader(csvFile.OpenReadStream()))
-			using (CsvReader csvReader = new CsvReader(csvStreamReader, csvConfig))
+				using (StreamReader csvStreamReader = new StreamReader(csvFile.OpenReadStream()))
+				using (CsvReader csvReader = new CsvReader(csvStreamReader, csvConfig))
+				{
+					csvReader.Context.RegisterClassMap<TargetModel>();
+					List<SourceModel> records = csvReader.GetRecords<SourceModel>().ToList();
+					await uploadFunction(records);
+				}
+			}
+			catch (Exception ex)
 			{
-				csvReader.Context.RegisterClassMap<TargetModel>();
-				List<SourceModel> records = csvReader.GetRecords<SourceModel>().ToList();
-				await uploadFunction(records);
 			}
 		}
 	}

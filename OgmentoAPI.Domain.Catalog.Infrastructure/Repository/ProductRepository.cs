@@ -254,6 +254,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				ExpiryDate = product.ExpiryDate,
 				LoyaltyPoints = product.LoyaltyPoints,
 				SkuCode = product.SkuCode,
+				Images = new List<PictureModel>(),
+				Categories = new List<Guid>()
+
 			};
 			await AddProduct(productModel);
 			int productId = _dbContext.Product.Single(x => x.SkuCode == product.SkuCode).ProductID;

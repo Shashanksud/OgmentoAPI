@@ -1,5 +1,7 @@
 ﻿using CsvHelper.Configuration;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
+using CsvHelper.Configuration;
+using CsvHelper.TypeConversion;
 
 
 namespace OgmentoAPI.Domain.Catalog.Abstractions.Dto
@@ -15,7 +17,10 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Dto
 			Map(m => m.LoyaltyPoints).Name("LoyaltyPoints");
 			Map(m => m.Weight).Name("Weight");
 			Map(m => m.ExpiryDate).Name("ExpiryDate").TypeConverterOption.Format("yyyy-MM-dd");
-			Map(m => m.CategoryIds).Name("CategoryIds").TypeConverter<TypeConverter>();
+			Map(m => m.CategoryIds).Name("CategoryIds").Convert(row => row.Row.GetField<string>("CategoryIds")
+			.Split(',')
+			.Select(int.Parse)
+			.ToList());
 		}
 	}
 }

@@ -73,6 +73,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			return Ok(await _productServices.UploadProducts(file));
 		}
 		[HttpPost]
+		[Route("uploadproduct")]
 		public async Task<IActionResult> AddProduct(UploadProductModel product)
 		{
 			await _productServices.AddProduct(product);
