@@ -58,6 +58,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				Price = x.Price,
 				ExpiryDate = x.ExpiryDate,
 				ProductDescription = x.ProductDescription,
+				Weight = x.Weight,
 				Images = GetImages(x.ProductID).GetAwaiter().GetResult(),
 				Category = GetCategory(x.ProductID).GetAwaiter().GetResult(),
 			}).ToList();
@@ -80,6 +81,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				Price = product.Price,
 				ExpiryDate = product.ExpiryDate,
 				ProductDescription = product.ProductDescription,
+				Weight = product.Weight,
 				LoyaltyPoints= product.LoyaltyPoints ?? 0,
 			};
 			return productModel;
@@ -204,7 +206,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				ExpiryDate = productModel.ExpiryDate,
 				Weight = productModel.Weight,
 			};
-			EntityEntry<Product> productEntry = _dbContext.Product.Add(product);
+			EntityEntry<Product> productEntry = await _dbContext.Product.AddAsync(product);
 			int rowsAdded = await _dbContext.SaveChangesAsync();
 			if(rowsAdded == 0)
 			{
