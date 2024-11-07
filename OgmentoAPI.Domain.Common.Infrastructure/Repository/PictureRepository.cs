@@ -78,6 +78,7 @@ namespace OgmentoAPI.Domain.Common.Infrastructure.Repository
 			Picture picture = _dbContext.Picture.Single(x => x.PictureID == pictureId);
 			PictureBinary pictureBinary = _dbContext.PictureBinary.Single(x => x.PictureId == pictureId);
 			_dbContext.PictureBinary.Remove(pictureBinary);
+			await _dbContext.SaveChangesAsync();
 			_dbContext.Picture.Remove(picture);
 			int rowsDeleted = await _dbContext.SaveChangesAsync();
 			if (rowsDeleted == 0) {
