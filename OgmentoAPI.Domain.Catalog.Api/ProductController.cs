@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
 using OgmentoAPI.Domain.Common.Abstractions;
-using System.Resources;
-
 
 namespace OgmentoAPI.Domain.Catalog.Api
 {
@@ -17,6 +14,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 	{
 		private readonly IProductServices _productServices;
 		private readonly string sampleCsvRelativePath;
+		
 		public ProductController(IProductServices productServices, IOptions<FilePaths> filePaths)
 		{
 			sampleCsvRelativePath = filePaths.Value.ProductSampleCsv;
@@ -79,6 +77,18 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			await _productServices.AddProduct(product);
 			return Ok();
 		}
+		[HttpDelete]
+		[Route("picture/{hash}")]
+		public async Task<IActionResult> DeletePicture(string hash)
+		{
+			if (!string.IsNullOrEmpty(hash)) {
+				throw new InvalidOperationException("Hash cannot be null or empty");
+			}
+			await _productServices.DeletePicture(hash);
+			return Ok();
+
+		}
+
 		[HttpPost]
 		[Route("picture/csv")]
 		public async Task<IActionResult> UploadPictures(IFormFile file)

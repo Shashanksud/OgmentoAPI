@@ -1,18 +1,23 @@
 ﻿using Microsoft.AspNetCore.Http;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
-using OgmentoAPI.Domain.Common.Abstractions.Models;
 
 namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 {
 	public interface IProductServices
 	{
-		public Task<List<ProductModel>> GetAllProducts();
-		public Task<ProductModel> GetProduct(string sku);
-		public Task UpdateProduct(AddProductModel product);
-		public Task DeleteProduct(string sku);
-		public Task<ProductModel> AddProduct(AddProductModel product);
-		public Task<List<FailedProductUpload>> UploadProducts(IFormFile csvFile);
-		public Task UploadPictures(IFormFile csvFile);
+		
+		
+	
+		
+		
+		Task<List<ProductModel>> GetAllProducts();
+		Task<ProductModel> GetProduct(string sku);
+		Task UpdateProduct(AddProductModel product);
+		Task DeleteProduct(string sku);
+		Task<ProductModel> AddProduct(AddProductModel product);
+		Task<List<FailedProductUpload>> UploadProducts(IFormFile csvFile);
+		Task UploadProducts(IFormFile csvFile);
+		Task DeletePicture(string hash);
 		Task AddProduct(UploadProductModel product);
 	}
 }

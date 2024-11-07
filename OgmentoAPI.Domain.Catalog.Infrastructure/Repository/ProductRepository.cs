@@ -49,7 +49,6 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			}
 			return category;
 		}
-
 		public async Task<List<ProductModel>> GetAllProducts()
 		{
 			List<Product> products = await _dbContext.Product.ToListAsync();
@@ -68,7 +67,6 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			}).ToList();
 			return productModel;
 		}
-
 		public async Task<ProductModel> GetProduct(string sku)
 		{
 			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
@@ -106,34 +104,21 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			}
 
 		} 
-		private async Task UpdateProductImageMapping(List<PictureModel> pictures, int productId)
+		private async Task AddProductImageMapping(List<PictureModel> pictures, int productId)
 		{
 			foreach (PictureModel picture in pictures) {
-				if (picture.ToBeDeleted)
+
+				PictureModel pictureModel = await _pictureService.AddPicture(picture);
+				ProductImageMapping productImageMapping = new ProductImageMapping()
 				{
-					ProductImageMapping productImage = _dbContext.ProductImageMapping.First(x => x.ImageId == picture.PictureId);
-					_dbContext.ProductImageMapping.Remove(productImage);
-					int rowsDeleted = await _dbContext.SaveChangesAsync();
-					if (rowsDeleted == 0)
-					{
-						throw new DatabaseOperationException($"Unable to Delete the image.");
-					}
-					await _pictureService.DeletePicture(picture.Hash);
-				}
-				if (picture.IsNew)
+					ProductId = productId,
+					ImageId = pictureModel.PictureId
+				};
+				_dbContext.ProductImageMapping.Add(productImageMapping);
+				int rowsAdded = await _dbContext.SaveChangesAsync();
+				if (rowsAdded == 0)
 				{
-					PictureModel pictureModel = await _pictureService.AddPicture(picture);
-					ProductImageMapping productImageMapping = new ProductImageMapping()
-					{
-						ProductId = productId,
-						ImageId = pictureModel.PictureId
-					};
-					_dbContext.ProductImageMapping.Add(productImageMapping);
-					int rowsAdded = await _dbContext.SaveChangesAsync();
-					if (rowsAdded == 0)
-					{
-						throw new DatabaseOperationException($"Unable to Add the Product Image mapping.");
-					}
+					throw new DatabaseOperationException($"Unable to Add the Product Image mapping.");
 				}
 			}
 		}
@@ -162,13 +147,12 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
 			}
 			await AddProductCategoryMapping(categoryIds,product.ProductID);
-			await UpdateProductImageMapping(productModel.Images, product.ProductID);
+			await AddProductImageMapping(productModel.Images, product.ProductID);
 		}
-
 		public async Task DeleteProduct(string sku)
 		{
 			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
-			if(product == null)
+			if (product == null)
 			{
 				throw new EntityNotFoundException($"Product {sku} cannot be found.");
 			}
@@ -177,7 +161,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			{
 				throw new DatabaseOperationException($"Unable to Delete Product {sku} Category Mappings.");
 			}
-			List<int> pictureIds = _dbContext.ProductImageMapping.Where(x => x.ProductId == product.ProductID).Select(x=>x.ImageId).ToList();
+			List<int> pictureIds = _dbContext.ProductImageMapping.Where(x => x.ProductId == product.ProductID).Select(x => x.ImageId).ToList();
 			if (pictureIds.Count != 0)
 			{
 				await _dbContext.ProductImageMapping.Where(x => x.ProductId == product.ProductID).ExecuteDeleteAsync();
@@ -193,7 +177,6 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				await _pictureService.DeletePictures(pictureIds);
 			}
 		}
-
 		public async Task AddProduct(AddProductModel productModel)
 		{
 			bool skuExists = _dbContext.Product.Any(x => x.SkuCode == productModel.SkuCode);
@@ -230,7 +213,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			}
 			if (productModel.Images.Count != 0)
 			{
-				await UpdateProductImageMapping(productModel.Images, productModel.ProductId);
+				await AddProductImageMapping(productModel.Images, productModel.ProductId);
 			}
 		}
 		public async Task<List<FailedProductUpload>> GetFailedUploads()
@@ -317,6 +300,10 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 					throw new DatabaseOperationException($"Unable to add {pictureModel.FileName}.");
 				}
 			}
+		}
+		public async Task DeletePictureProductMapping(int pictureId)
+		{
+			await _dbContext.ProductImageMapping.Where(x => x.ImageId == pictureId).ExecuteDeleteAsync();
 		}
 	}
 }

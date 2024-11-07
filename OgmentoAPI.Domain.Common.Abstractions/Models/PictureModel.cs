@@ -13,7 +13,5 @@ namespace OgmentoAPI.Domain.Common.Abstractions.Models
 		public string MimeType { get; set; }
 		public byte[] BinaryData { get; set; }
 		public string? Hash { get; set; }
-		public bool ToBeDeleted { get; set; } = false;
-		public bool IsNew { get; set; } = false;
 	}
 }
