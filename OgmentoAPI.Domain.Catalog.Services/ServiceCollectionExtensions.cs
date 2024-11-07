@@ -7,6 +7,8 @@ using OgmentoAPI.Domain.Catalog.Abstractions.Services;
 using OgmentoAPI.Domain.Catalog.Infrastructure;
 using OgmentoAPI.Domain.Catalog.Infrastructure.Repository;
 using OgmentoAPI.Domain.Common.Abstractions;
+using OgmentoAPI.Domain.Common.Abstractions.Services;
+using OgmentoAPI.Domain.Common.Services;
 
 namespace OgmentoAPI.Domain.Catalog.Services
 {
@@ -18,6 +20,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				.AddTransient<ICategoryServices, CategoryServices>()
 				.AddTransient<ICategoryRepository, CategoryRepository>()
 				.AddTransient<IProductServices, ProductServices>()
+				.AddTransient<IPictureService, PictureServices>()
 				.AddTransient<IProductRepository, ProductRepository>()
 				.AddTransient<IAzureQueueService, AzureQueueService>();
 		}
