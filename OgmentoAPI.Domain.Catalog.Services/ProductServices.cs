@@ -17,6 +17,9 @@ namespace OgmentoAPI.Domain.Catalog.Services
 	public class ProductServices: IProductServices
 	{
 		private readonly IProductRepository _productRepository;
+		private readonly PictureServices _pictureServices;
+		private readonly IAzureQueueService _azureQueueService;
+
 		public ProductServices(IProductRepository productRepository, PictureServices pictureServices, IAzureQueueService azureQueueService)
 		{
 			_productRepository = productRepository;

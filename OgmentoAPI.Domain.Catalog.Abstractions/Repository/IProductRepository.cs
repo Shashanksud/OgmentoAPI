@@ -12,8 +12,10 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 		Task UpdateProduct(AddProductModel productModel);
 		Task DeleteProduct(string sku);
 		Task AddProduct(AddProductModel productModel);
+		Task AddProduct(UploadProductModel productModel);
 		Task UploadProducts(List<UploadProductModel> products);
 		Task UploadPictures(List<UploadPictureModel> pictures);
 		Task DeletePictureProductMapping(int pictureId);
+		Task<List<FailedProductUpload>> GetFailedUploads();
 	}
 }

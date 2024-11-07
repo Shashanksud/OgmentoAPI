@@ -85,7 +85,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				ProductDescription = product.ProductDescription,
 				Weight = product.Weight,
 				LoyaltyPoints= product.LoyaltyPoints ?? 0,
-				Weight = product.Weight,
+			
 			};
 			return productModel;
 		}
