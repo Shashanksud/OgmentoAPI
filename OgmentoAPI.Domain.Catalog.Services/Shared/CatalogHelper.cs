@@ -8,27 +8,21 @@ namespace OgmentoAPI.Domain.Catalog.Services.Shared
 {
 	public class CatalogHelper
 	{
-		public static async Task UploadCsvFile<SourceModel, TargetModel>(IFormFile csvFile, Func<List<SourceModel>, Task> uploadFunction) where TargetModel : ClassMap<SourceModel>
+		public static List<SourceModel> UploadCsvFile<SourceModel, TargetModel>(IFormFile csvFile) where TargetModel : ClassMap<SourceModel>
 		{
-			try
+			CsvConfiguration csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
 			{
-				CsvConfiguration csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
-				{
-					Delimiter = typeof(SourceModel) == typeof(UploadPictureModel) ? "," : ";",
-					TrimOptions = TrimOptions.Trim,
-					BadDataFound = null,
-				};
+				Delimiter = typeof(SourceModel) == typeof(UploadPictureModel) ? "," : ";",
+				TrimOptions = TrimOptions.Trim,
+				BadDataFound = null,
+			};
 
-				using (StreamReader csvStreamReader = new StreamReader(csvFile.OpenReadStream()))
-				using (CsvReader csvReader = new CsvReader(csvStreamReader, csvConfig))
-				{
-					csvReader.Context.RegisterClassMap<TargetModel>();
-					List<SourceModel> records = csvReader.GetRecords<SourceModel>().ToList();
-					await uploadFunction(records);
-				}
-			}
-			catch (Exception ex)
+			using (StreamReader csvStreamReader = new StreamReader(csvFile.OpenReadStream()))
+			using (CsvReader csvReader = new CsvReader(csvStreamReader, csvConfig))
 			{
+				csvReader.Context.RegisterClassMap<TargetModel>();
+				List<SourceModel> records = csvReader.GetRecords<SourceModel>().ToList();
+				return records;
 			}
 		}
 	}
