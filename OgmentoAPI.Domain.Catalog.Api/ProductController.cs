@@ -83,7 +83,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[Route("picture/{hash}")]
 		public async Task<IActionResult> DeletePicture(string hash)
 		{
-			if (!string.IsNullOrEmpty(hash)) {
+			if (string.IsNullOrEmpty(hash)) {
 				throw new InvalidOperationException("Hash cannot be null or empty");
 			}
 			await _productServices.DeletePicture(hash);
