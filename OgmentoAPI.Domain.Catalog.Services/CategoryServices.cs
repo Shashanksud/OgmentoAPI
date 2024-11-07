@@ -99,7 +99,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				return new ResponseDto
 				{
 					IsSuccess = (rowsAffected > 0),
-					ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Errow"
+					ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
 				};
 			}
 			
@@ -121,7 +121,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			return new ResponseDto
 			{
 				IsSuccess = (rowsAffected > 0),
-				ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Errow"
+				ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
 			};
 		}
 		private async Task<ResponseDto> AddSubCategories(List<UploadCategoryModel> subCategories, int parentId)

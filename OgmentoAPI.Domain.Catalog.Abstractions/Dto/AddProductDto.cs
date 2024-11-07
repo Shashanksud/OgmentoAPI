@@ -6,7 +6,7 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Dto
 	public class AddProductDto: ProductBase
 	{
 	
-		public List<PictureDto> Images { get; set; } = [];
-		public List<Guid> Categories { get; set; } = [];
+		public List<PictureDto> Images { get; set; } = new List<PictureDto>();
+		public List<Guid> Categories { get; set; } = new List<Guid>();
 	}
 }

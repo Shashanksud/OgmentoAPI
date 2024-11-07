@@ -8,7 +8,7 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Models
 	public class AddProductModel: ProductBase
 	{
 		public int ProductId { get; set; }
-		public List<PictureModel> Images { get; set; }
-		public List<Guid> Categories { get; set; }
+		public List<PictureModel> Images { get; set; } = new List<PictureModel>();
+		public List<Guid> Categories { get; set; } = new List<Guid>();
 	}
 }

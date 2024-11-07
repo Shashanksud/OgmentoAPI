@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
@@ -26,7 +27,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
 		{
-			var products = await _productServices.GetAllProducts();
+			List<ProductModel> products = await _productServices.GetAllProducts();
 			return Ok(products.ToDto());
 		}
 
@@ -35,8 +36,10 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		public async Task<IActionResult> GetProduct(string sku)
 		{
 			if (string.IsNullOrEmpty(sku))
+			{
 				throw new InvalidDataException("sku cannot be null or empty.");
-			var product = await _productServices.GetProduct(sku);
+			}
+			ProductModel product = await _productServices.GetProduct(sku);
 			return Ok(product.ToDto());
 		}
 		[HttpPut]
@@ -60,8 +63,8 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[HttpPost]
 		public async Task<IActionResult> AddProduct(AddProductDto addProductDto)
 		{
-			var addedProduct = await _productServices.AddProduct(addProductDto.ToModel());
-			return Ok(addedProduct.ToDto());
+			await _productServices.AddProduct(addProductDto.ToModel());
+			return Ok(await _productServices.GetProduct(addProductDto.SkuCode));
 		}
 
 		[HttpPost]
@@ -69,14 +72,17 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		public async Task<IActionResult> UploadProducts(IFormFile file)
 		{
 			if (file == null || file.Length == 0)
+			{
 				throw new InvalidOperationException("The uploaded file is either null or empty. Please upload a valid CSV file.");
-			return Ok(await _productServices.UploadProducts(file));
+			}
+			await _productServices.UploadProducts(file);
+			return Ok();
 		}
 		[HttpPost]
 		[Route("uploadproduct")]
-		public async Task<IActionResult> AddProduct(UploadProductModel product)
+		public async Task<IActionResult> SaveProductUpload(UploadProductModel product)
 		{
-			await _productServices.AddProduct(product);
+			await _productServices.SaveProductUpload(product);
 			return Ok();
 		}
 		[HttpDelete]
@@ -108,11 +114,28 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		{
 			string sampleCsvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, sampleCsvRelativePath);
 			if (!System.IO.File.Exists(sampleCsvPath))
+			{
 				return NotFound("Sample CSV file not found.");
-
+			}
 			byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(sampleCsvPath);
 			string fileName = Path.GetFileName(sampleCsvPath);
 			return File(fileBytes, "text/csv", fileName);
+		}
+		[HttpGet]
+		[Route("validate/{sku}")]
+		public async Task<IActionResult> ValidateSku(string sku)
+		{
+			if (string.IsNullOrEmpty(sku))
+			{
+				throw new InvalidOperationException("sku cannot be null or empty");
+			}
+			return Ok(await _productServices.IsSkuExists(sku));
+		}
+		[HttpGet]
+		[Route("upload/failed")]
+		public async Task<IActionResult> GetFailedUploads()
+		{
+			return Ok(await _productServices.FailedProductUploads());
 		}
 	}
 }

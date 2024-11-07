@@ -1,224 +1,82 @@
-﻿using Azure.Storage.Queues.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
 using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
-using OgmentoAPI.Domain.Catalog.Abstractions.Services;
-using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
-using OgmentoAPI.Domain.Common.Abstractions.Models;
-using OgmentoAPI.Domain.Common.Abstractions.Services;
+
 
 namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 {
 	public class ProductRepository: IProductRepository
 	{
-	
 		private readonly CatalogDbContext _dbContext;
-		private readonly IPictureService _pictureService;
-		private readonly ICategoryServices _categoryServices;
-		private readonly IAzureQueueService _azureQueueServices;
-		public ProductRepository(IAzureQueueService azureQueueServices, ICategoryServices categoryServices, CatalogDbContext dbContext, IPictureService pictureService)
+		public ProductRepository(CatalogDbContext dbContext)
 		{
-			_categoryServices = categoryServices;
 			_dbContext = dbContext;
-			_pictureService = pictureService;
-			_azureQueueServices = azureQueueServices;
 		}
-		public async Task<List<PictureModel>> GetImages(int productId)
+		public async Task<List<int>> GetImages(int productId)
 		{
-			List<int> pictureIds = _dbContext.ProductImageMapping.Where(x => x.ProductId == productId).Select(x => x.ImageId).ToList();
-			List<PictureModel> pictureModels = await _pictureService.GetPictures(pictureIds);
-			return pictureModels;
+			return await _dbContext.ProductImageMapping.Where(x => x.ProductId == productId).Select(x => x.ImageId).ToListAsync();
 		}
-		private async Task<CategoryModel> GetCategory(int productId) {
-			List<int> productCategoryIds = _dbContext.ProductCategoryMapping.Where(x => x.ProductId == productId ).Select(x=>x.CategoryId).ToList();
-			List<Guid> productCategoryUids = productCategoryIds.Select(x => _categoryServices.GetCategoryUid(x)).ToList();
-			List<CategoryModel> productCategories = new List<CategoryModel>();
-			foreach (Guid productCategoryUid in productCategoryUids)
-			{
-				productCategories.Add(await _categoryServices.GetCategoryForProduct(productCategoryUid));
-			}
-			CategoryModel category = productCategories.Single(x => x.ParentCategoryId == 1);
-			category.ParentCategoryUid = new Guid();
-			category.SubCategories = productCategories.Where(x=>x.ParentCategoryId==category.CategoryId).ToList();
-			foreach(CategoryModel subCategory in category.SubCategories)
-			{
-				subCategory.SubCategories= productCategories.Where(x=>x.ParentCategoryId== subCategory.CategoryId).ToList();
-			}
-			return category;
+		public async Task<List<int>> GetCategory(int productId) {
+			return await _dbContext.ProductCategoryMapping.Where(x => x.ProductId == productId ).Select(x=>x.CategoryId).ToListAsync();
 		}
-		public async Task<List<ProductModel>> GetAllProducts()
+		public async Task<Product?> GetProduct(string sku)
 		{
-			List<Product> products = await _dbContext.Product.ToListAsync();
-			List<ProductModel> productModel = products.Select(x => new ProductModel
-			{
-				ProductId = x.ProductID,
-				ProductName = x.ProductName,
-				SkuCode = x.SkuCode,
-				LoyaltyPoints = x.LoyaltyPoints ?? 0,
-				Price = x.Price,
-				ExpiryDate = x.ExpiryDate,
-				ProductDescription = x.ProductDescription,
-				Weight = x.Weight,
-				Images = GetImages(x.ProductID).GetAwaiter().GetResult(),
-				Category = GetCategory(x.ProductID).GetAwaiter().GetResult(),
-			}).ToList();
-			return productModel;
+			return await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
 		}
-		public async Task<ProductModel> GetProduct(string sku)
+		public async Task<List<Product>> GetAllProducts()
 		{
-			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
-			if (product == null) {
-				throw new EntityNotFoundException($"Product {sku} not found.");
-			}
-			ProductModel productModel = new ProductModel()
-			{
-				ProductId= product.ProductID,
-				ProductName= product.ProductName,
-				SkuCode= sku,
-				Images = GetImages(product.ProductID).GetAwaiter().GetResult(),
-				Category = GetCategory(product.ProductID).GetAwaiter().GetResult(),
-				Price = product.Price,
-				ExpiryDate = product.ExpiryDate,
-				ProductDescription = product.ProductDescription,
-				Weight = product.Weight,
-				LoyaltyPoints= product.LoyaltyPoints ?? 0,
-			
-			};
-			return productModel;
+			return await _dbContext.Product.ToListAsync();
 		}
-		private async Task AddProductCategoryMapping(List<int> CategoryIds, int productId)
+		
+		public async Task<int> AddProductCategoryMapping(List<ProductCategoryMapping> productCategories)
 		{
-			List<ProductCategoryMapping> productCategories = CategoryIds.Select(x => new ProductCategoryMapping
-			{
-				ProductId = productId,
-				CategoryId = x
-			}).ToList();
 			await _dbContext.ProductCategoryMapping.AddRangeAsync(productCategories);
-			int rowsAdded = await _dbContext.SaveChangesAsync();
-			if (rowsAdded == 0)
-			{
-				throw new DatabaseOperationException($"Unable to Add the Product Category mapping.");
-			}
-
+			return await _dbContext.SaveChangesAsync();
 		} 
-		private async Task AddProductImageMapping(List<PictureModel> pictures, int productId)
+		public async Task<int> AddProductImageMapping(List<ProductImageMapping> productImageMappings)
 		{
-			foreach (PictureModel picture in pictures) {
-
-				PictureModel pictureModel = await _pictureService.AddPicture(picture);
-				ProductImageMapping productImageMapping = new ProductImageMapping()
-				{
-					ProductId = productId,
-					ImageId = pictureModel.PictureId
-				};
-				_dbContext.ProductImageMapping.Add(productImageMapping);
-				int rowsAdded = await _dbContext.SaveChangesAsync();
-				if (rowsAdded == 0)
-				{
-					throw new DatabaseOperationException($"Unable to Add the Product Image mapping.");
-				}
-			}
+			await _dbContext.ProductImageMapping.AddRangeAsync(productImageMappings);
+			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task UpdateProduct(AddProductModel productModel)
+		public async Task<int> DeleteProductCategoryMapping(int productId)
 		{
-			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == productModel.SkuCode);
-			if(product == null)
-			{
-				throw new EntityNotFoundException($"Product {productModel.SkuCode} not found.");
-			}
-			product.ProductName = productModel.ProductName;
-			product.ProductDescription = productModel.ProductDescription;
-			product.Price = productModel.Price;
-			product.ExpiryDate = productModel.ExpiryDate;
-			product.LoyaltyPoints = productModel.LoyaltyPoints;
+			return await _dbContext.ProductCategoryMapping.Where(x => x.ProductId == productId).ExecuteDeleteAsync();
+		}
+		public async Task<List<int>> GetProductImageMappings(int productId)
+		{
+			return await _dbContext.ProductImageMapping.Where(x => x.ProductId == productId).Select(x => x.ImageId).ToListAsync();
+		}
+		public async Task<int> UpdateProduct(Product product)
+		{
 			_dbContext.Product.Update(product);
-			int productRowsUpdated = await _dbContext.SaveChangesAsync();
-			if(productRowsUpdated == 0)
-			{
-				throw new DatabaseOperationException($"Unable to Update Product {productModel.SkuCode}.");
-			}
-			await _dbContext.ProductCategoryMapping.Where(x => x.ProductId == product.ProductID).ExecuteDeleteAsync();
-			List<int> categoryIds = new List<int>();
-			foreach (Guid categoryUid in productModel.Categories)
-			{
-				categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
-			}
-			await AddProductCategoryMapping(categoryIds,product.ProductID);
-			await AddProductImageMapping(productModel.Images, product.ProductID);
+			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task DeleteProduct(string sku)
+		public async Task<int> DeleteProduct(Product product)
 		{
-			Product? product = await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
-			if (product == null)
-			{
-				throw new EntityNotFoundException($"Product {sku} cannot be found.");
-			}
-			int rowsDeleted = await _dbContext.ProductCategoryMapping.Where(x => x.ProductId == product.ProductID).ExecuteDeleteAsync();
-			if (rowsDeleted == 0)
-			{
-				throw new DatabaseOperationException($"Unable to Delete Product {sku} Category Mappings.");
-			}
-			List<int> pictureIds = _dbContext.ProductImageMapping.Where(x => x.ProductId == product.ProductID).Select(x => x.ImageId).ToList();
-			if (pictureIds.Count != 0)
-			{
-				await _dbContext.ProductImageMapping.Where(x => x.ProductId == product.ProductID).ExecuteDeleteAsync();
-			}
 			_dbContext.Product.Remove(product);
-			rowsDeleted = await _dbContext.SaveChangesAsync();
-			if (rowsDeleted == 0)
-			{
-				throw new DatabaseOperationException($"Unable to Delete Product {sku}.");
-			}
-			if (pictureIds.Count != 0)
-			{
-				await _pictureService.DeletePictures(pictureIds);
-			}
+			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task AddProduct(AddProductModel productModel)
+		public async Task<int> AddProduct(Product product)
 		{
-			bool skuExists = _dbContext.Product.Any(x => x.SkuCode == productModel.SkuCode);
-			if (skuExists)
-			{
-				throw new InvalidDataException($"Product with skucode: {productModel.SkuCode} already exists. Please give different code.");
-			}
-			Product product = new Product()
-			{
-				SkuCode = productModel.SkuCode,
-				Price = productModel.Price,
-				ProductDescription = productModel.ProductDescription,
-				ProductName = productModel.ProductName,
-				LoyaltyPoints = productModel.LoyaltyPoints,
-				ExpiryDate = productModel.ExpiryDate,
-				Weight = productModel.Weight,
-			};
-			EntityEntry<Product> productEntry = await _dbContext.Product.AddAsync(product);
-			int rowsAdded = await _dbContext.SaveChangesAsync();
-			if (rowsAdded == 0)
-			{
-				throw new DatabaseOperationException($"Product {productModel.SkuCode} not Added.");
-			}
-			productModel.ProductId = productEntry.Entity.ProductID;
-
-			if (productModel.Categories.Count != 0)
-			{
-				List<int> categoryIds = new List<int>();
-				foreach (Guid categoryUid in productModel.Categories)
-				{
-					categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
-				}
-				await AddProductCategoryMapping(categoryIds, productModel.ProductId);
-			}
-			if (productModel.Images.Count != 0)
-			{
-				await AddProductImageMapping(productModel.Images, productModel.ProductId);
-			}
+			await _dbContext.Product.AddAsync(product);
+			return await _dbContext.SaveChangesAsync();
+		}
+		public async Task<bool> IsSkuExists(string sku)
+		{
+			return await _dbContext.Product.AsNoTracking().AnyAsync(x => x.SkuCode == sku);
+		}
+		public async Task<int> DeletePictureProductMapping(int pictureId)
+		{
+			return await _dbContext.ProductImageMapping.Where(x => x.ImageId == pictureId).ExecuteDeleteAsync();
+		}
+		public async Task<int> DeletePictureProductMappings(List<int> pictureIds)
+		{
+			return await _dbContext.ProductImageMapping.Where(x => pictureIds.Contains(x.ImageId)).ExecuteDeleteAsync();
 		}
 		public async Task<List<FailedProductUpload>> GetFailedUploads()
 		{
-			return await _dbContext.ProductJson
+			return await _dbContext.ProductUploads
 				.Where(p => !p.IsSuccess)
 				.Select(p => new FailedProductUpload
 				{
@@ -228,82 +86,19 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				.ToListAsync();
 		}
 
-		public async Task AddProduct(UploadProductModel product)
+		public async Task<int> AddProductUploads(ProductUploads product)
 		{
-			AddProductModel productModel = new AddProductModel
-			{
-				ProductName = product.ProductName,
-				ProductDescription = product.ProductDescription,
-				Price = product.Price,
-				Weight = product.Weight,
-				ExpiryDate = product.ExpiryDate,
-				LoyaltyPoints = product.LoyaltyPoints,
-				SkuCode = product.SkuCode,
-				Images = new List<PictureModel>(),
-				Categories = new List<Guid>()
-
-			};
-			await AddProduct(productModel);
-			int productId = _dbContext.Product.Single(x => x.SkuCode == product.SkuCode).ProductID;
-			await AddProductCategoryMapping(product.CategoryIds, productId);
+			_dbContext.ProductUploads.Add(product);
+			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task UploadProducts(List<UploadProductModel> products)
+		public async Task<int> UpdateProductUploads(ProductUploads product)
 		{
-			foreach (UploadProductModel product in products)
-			{
-				string productJsonString = JsonConvert.SerializeObject(product);
-				ProductJson productJson = new ProductJson
-				{
-					Product = productJsonString,
-					IsSuccess = false,
-					Sku = product.SkuCode
-				};
-				_dbContext.ProductJson.Add(productJson);
-				await _dbContext.SaveChangesAsync();
-
-				try
-				{
-					await _azureQueueServices.AddMessageAsync(productJson.Product);
-					productJson.IsSuccess = true;
-				}
-				catch (Exception ex)
-				{
-					productJson.ExceptionMessage = ex.Message;
-				}
-				finally
-				{
-					await _dbContext.SaveChangesAsync();
-				}
-			}
+			_dbContext.ProductUploads.Update(product);
+			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task UploadPictures(List<UploadPictureModel> pictures)
+		public async Task<ProductUploads> GetProductUploads(String sku)
 		{
-			foreach (UploadPictureModel picture in pictures) {
-				PictureModel pictureModel = await _pictureService.AddPicture(new PictureModel
-				{
-					FileName = picture.FileName,
-					MimeType = picture.MimeType,
-					BinaryData = Convert.FromBase64String(picture.Base64EncodedData)
-				});
-				int? productId = _dbContext.Product.FirstOrDefault(x => x.SkuCode == picture.SkuCode)?.ProductID;
-				if (productId == null) {
-					throw new EntityNotFoundException($"Product {picture.SkuCode} doesn't exist");
-				}
-				_dbContext.ProductImageMapping.Add(new ProductImageMapping
-				{
-					ProductId = productId.Value,
-					ImageId = pictureModel.PictureId,
-				});
-				int rowsAdded = await _dbContext.SaveChangesAsync();
-				if (rowsAdded == 0)
-				{
-					throw new DatabaseOperationException($"Unable to add {pictureModel.FileName}.");
-				}
-			}
-		}
-		public async Task DeletePictureProductMapping(int pictureId)
-		{
-			await _dbContext.ProductImageMapping.Where(x => x.ImageId == pictureId).ExecuteDeleteAsync();
+			return await _dbContext.ProductUploads.FirstAsync(x=>x.Sku == sku);
 		}
 	}
 }
