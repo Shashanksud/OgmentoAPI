@@ -9,6 +9,7 @@ using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
 using OgmentoAPI.Domain.Catalog.Services.Shared;
+using OgmentoAPI.Domain.Common.Abstractions.Services;
 using OgmentoAPI.Domain.Common.Services;
 using System.Globalization;
 
@@ -17,10 +18,10 @@ namespace OgmentoAPI.Domain.Catalog.Services
 	public class ProductServices: IProductServices
 	{
 		private readonly IProductRepository _productRepository;
-		private readonly PictureServices _pictureServices;
+		private readonly IPictureService _pictureServices;
 		private readonly IAzureQueueService _azureQueueService;
 
-		public ProductServices(IProductRepository productRepository, PictureServices pictureServices, IAzureQueueService azureQueueService)
+		public ProductServices(IProductRepository productRepository, IPictureService pictureServices, IAzureQueueService azureQueueService)
 		{
 			_productRepository = productRepository;
 			_pictureServices = pictureServices;

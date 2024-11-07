@@ -7,7 +7,9 @@ using OgmentoAPI.Domain.Catalog.Abstractions.Services;
 using OgmentoAPI.Domain.Catalog.Infrastructure;
 using OgmentoAPI.Domain.Catalog.Infrastructure.Repository;
 using OgmentoAPI.Domain.Common.Abstractions;
+using OgmentoAPI.Domain.Common.Abstractions.Repository;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
+using OgmentoAPI.Domain.Common.Infrastructure.Repository;
 using OgmentoAPI.Domain.Common.Services;
 
 namespace OgmentoAPI.Domain.Catalog.Services
@@ -17,12 +19,15 @@ namespace OgmentoAPI.Domain.Catalog.Services
 		public static IServiceCollection AddCatalog(this IServiceCollection services, string dbConnectionString)
 		{
 			return services.AddDbContext<CatalogDbContext>(opts => opts.UseSqlServer(dbConnectionString))
-				.AddTransient<ICategoryServices, CategoryServices>()
+					.AddTransient<IAzureQueueService, AzureQueueService>()
 				.AddTransient<ICategoryRepository, CategoryRepository>()
-				.AddTransient<IProductServices, ProductServices>()
+				.AddTransient<ICategoryServices, CategoryServices>()
+				.AddTransient<IPictureRepository, PictureRepository>()
 				.AddTransient<IPictureService, PictureServices>()
 				.AddTransient<IProductRepository, ProductRepository>()
-				.AddTransient<IAzureQueueService, AzureQueueService>();
+				.AddTransient<IProductServices, ProductServices>();
+
+			
 		}
 	}
 }
