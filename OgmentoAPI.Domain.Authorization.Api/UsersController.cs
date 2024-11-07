@@ -54,7 +54,7 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		}
 
 		[Route("UpdateUserDetails")]
-		[HttpPost]
+		[HttpPut]
 		[Authorize]
 		[Produces(typeof(bool))]
 		public IActionResult UpdateUserDetails(UserDetailsDto userDetails)
