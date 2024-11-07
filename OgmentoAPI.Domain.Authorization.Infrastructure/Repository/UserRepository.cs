@@ -107,25 +107,30 @@ namespace OgmentoAPI.Domain.Authorization.Infrastructure.Repository
 				throw new DatabaseOperationException("Unable to save user");
 			}
             return entity.Entity.UserId;
-        }
-        public bool DeleteUserDetails(Guid userUId)
-        {
-            int noOfRowsDeleted = 0;
-            UsersMaster usersMaster = _context.UsersMaster.FirstOrDefault(user => user.UserUid == userUId);
-            if (usersMaster != null)
-            {
-                _context.UsersMaster.Remove(usersMaster);
-                noOfRowsDeleted = _context.SaveChanges();
+		}
+		public bool DeleteUserDetails(Guid userUId)
+		{
+			int noOfRowsDeleted = 0;
+			UsersMaster usersMaster = _context.UsersMaster.FirstOrDefault(user => user.UserUid == userUId);
+			if (usersMaster != null)
+			{
+				_context.UsersMaster.Remove(usersMaster);
+				noOfRowsDeleted = _context.SaveChanges();
 
-            }
-            if (noOfRowsDeleted > 0)
-            {
-                return true;
-            }
-            return false;
-        }
+			}
+			if (noOfRowsDeleted > 0)
+			{
+				return true;
+			}
+			return false;
+		}
+		public int? GetUserId(Guid userUId)
+		{
+			int? userId = _context.UsersMaster.FirstOrDefault(x => x.UserUid == userUId).UserId;
+			return userId;
+		}
 
-    }
+	}
 }
 
 

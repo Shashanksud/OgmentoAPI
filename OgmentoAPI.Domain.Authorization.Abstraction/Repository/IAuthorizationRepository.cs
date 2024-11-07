@@ -15,6 +15,7 @@ namespace OgmentoAPI.Domain.Authorization.Abstractions.Repository
 		int AddUser(UserModel user);
 
 		bool DeleteUserDetails(Guid userUId);
+		int? GetUserId(Guid userUId);
 
 	}
 

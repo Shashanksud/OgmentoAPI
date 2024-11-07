@@ -105,11 +105,12 @@ namespace OgmentoAPI.Domain.Authorization.Services
         }
 
         public bool DeleteUser(Guid userUId)
-        {
-
-            //Todo need to delete salescenter for user, userroles
-            return _context.DeleteUserDetails(userUId);
+		{
+			int? userId = _context.GetUserId(userUId);
+			_salesCenterService.DeleteSalesCenterUserMapping(userId.Value);
+			return _context.DeleteUserDetails(userUId);
         }
-    }
+
+	}
 }
 
