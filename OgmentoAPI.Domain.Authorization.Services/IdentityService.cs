@@ -49,8 +49,15 @@ namespace OgmentoAPI.Domain.Authorization.Services
                 throw;
             }
         }
+		public async Task LogoutAsync(ClaimsPrincipal User)
+		{
+			Guid securityStamp = Guid.NewGuid();
+			Claim userIdClaim = User.FindFirst(CustomClaimTypes.UserId);
+			int userId = int.Parse(userIdClaim.Value);
+			await _contextRepository.UpdateSecurityStamp(securityStamp,userId);
+		}
 
-        private RolesMaster GetUserRole(int userId)
+		private RolesMaster GetUserRole(int userId)
         {
             try
             {
@@ -62,7 +69,12 @@ namespace OgmentoAPI.Domain.Authorization.Services
                 return new RolesMaster();
             }
         }
-
+		private async Task<string> GetSecurityStamp(int userId)
+		{
+			Guid securityStamp = Guid.NewGuid();
+			await _contextRepository.UpdateSecurityStamp(securityStamp, userId);
+			return securityStamp.ToString();
+		}
         public async Task<AuthenticationResult> AuthenticateAsync(UsersMaster user)
         {
             AuthenticationResult authenticationResult = new AuthenticationResult();
@@ -80,6 +92,7 @@ namespace OgmentoAPI.Domain.Authorization.Services
                     new Claim(CustomClaimTypes.UserName,user.UserName ?? ""),
                     new Claim(CustomClaimTypes.Jti, Guid.NewGuid().ToString()),
                     new Claim(CustomClaimTypes.Role, GetUserRole(user.UserId).RoleName),
+					new Claim(CustomClaimTypes.SecurityStamp,await GetSecurityStamp(user.UserId))
                     });
 
                 var tokenDescriptor = new SecurityTokenDescriptor

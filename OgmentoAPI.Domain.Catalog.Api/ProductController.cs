@@ -10,6 +10,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 {
 	[ApiController]
 	[Route("api/[controller]")]
+	[Authorize]
 	public class ProductController : ControllerBase
 	{
 		private readonly IProductServices _productServices;
