@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Storage.Queues.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Newtonsoft.Json;
 using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
@@ -16,11 +18,13 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		private readonly CatalogDbContext _dbContext;
 		private readonly IPictureService _pictureService;
 		private readonly ICategoryServices _categoryServices;
-		public ProductRepository(ICategoryServices categoryServices, CatalogDbContext dbContext, IPictureService pictureService)
+		private readonly IAzureQueueService _azureQueueServices;
+		public ProductRepository(IAzureQueueService azureQueueServices, ICategoryServices categoryServices, CatalogDbContext dbContext, IPictureService pictureService)
 		{
 			_categoryServices = categoryServices;
 			_dbContext = dbContext;
 			_pictureService = pictureService;
+			_azureQueueServices = azureQueueServices;
 		}
 		public async Task<List<PictureModel>> GetImages(int productId)
 		{
@@ -83,6 +87,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 				ProductDescription = product.ProductDescription,
 				Weight = product.Weight,
 				LoyaltyPoints= product.LoyaltyPoints ?? 0,
+				Weight = product.Weight,
 			};
 			return productModel;
 		}
@@ -208,16 +213,16 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			};
 			EntityEntry<Product> productEntry = await _dbContext.Product.AddAsync(product);
 			int rowsAdded = await _dbContext.SaveChangesAsync();
-			if(rowsAdded == 0)
+			if (rowsAdded == 0)
 			{
 				throw new DatabaseOperationException($"Product {productModel.SkuCode} not Added.");
 			}
 			productModel.ProductId = productEntry.Entity.ProductID;
-			
-			if (productModel.Categories.Count!=0)
+
+			if (productModel.Categories.Count != 0)
 			{
 				List<int> categoryIds = new List<int>();
-				foreach(Guid categoryUid in productModel.Categories)
+				foreach (Guid categoryUid in productModel.Categories)
 				{
 					categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
 				}
@@ -227,29 +232,67 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 			{
 				await UpdateProductImageMapping(productModel.Images, productModel.ProductId);
 			}
+		}
+		public async Task<List<FailedProductUpload>> GetFailedUploads()
+		{
+			return await _dbContext.ProductJson
+				.Where(p => !p.IsSuccess)
+				.Select(p => new FailedProductUpload
+				{
+					Sku = p.Sku,
+					ExceptionMessage = p.ExceptionMessage
+				})
+				.ToListAsync();
+		}
 
+		public async Task AddProduct(UploadProductModel product)
+		{
+			AddProductModel productModel = new AddProductModel
+			{
+				ProductName = product.ProductName,
+				ProductDescription = product.ProductDescription,
+				Price = product.Price,
+				Weight = product.Weight,
+				ExpiryDate = product.ExpiryDate,
+				LoyaltyPoints = product.LoyaltyPoints,
+				SkuCode = product.SkuCode,
+				Images = new List<PictureModel>(),
+				Categories = new List<Guid>()
+
+			};
+			await AddProduct(productModel);
+			int productId = _dbContext.Product.Single(x => x.SkuCode == product.SkuCode).ProductID;
+			await AddProductCategoryMapping(product.CategoryIds, productId);
 		}
 		public async Task UploadProducts(List<UploadProductModel> products)
 		{
-			List<AddProductModel> productModels = products.Select(x => new AddProductModel {
-				ProductName = x.ProductName,
-				ProductDescription = x.ProductDescription,
-				Price = x.Price,
-				Weight = x.Weight,
-				ExpiryDate = x.ExpiryDate,
-				LoyaltyPoints = x.LoyaltyPoints,
-				SkuCode = x.SkuCode,
-			}).ToList();
-			foreach (AddProductModel productModel in productModels) {
-				await AddProduct(productModel);
-			}
 			foreach (UploadProductModel product in products)
 			{
-				int productId = _dbContext.Product.Single(x => x.SkuCode == product.SkuCode).ProductID;
-				await AddProductCategoryMapping(product.CategoryIds, productId);
+				string productJsonString = JsonConvert.SerializeObject(product);
+				ProductJson productJson = new ProductJson
+				{
+					Product = productJsonString,
+					IsSuccess = false,
+					Sku = product.SkuCode
+				};
+				_dbContext.ProductJson.Add(productJson);
+				await _dbContext.SaveChangesAsync();
+
+				try
+				{
+					await _azureQueueServices.AddMessageAsync(productJson.Product);
+					productJson.IsSuccess = true;
+				}
+				catch (Exception ex)
+				{
+					productJson.ExceptionMessage = ex.Message;
+				}
+				finally
+				{
+					await _dbContext.SaveChangesAsync();
+				}
 			}
 		}
-
 		public async Task UploadPictures(List<UploadPictureModel> pictures)
 		{
 			foreach (UploadPictureModel picture in pictures) {

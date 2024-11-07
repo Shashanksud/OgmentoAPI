@@ -11,7 +11,8 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 		public Task UpdateProduct(AddProductModel product);
 		public Task DeleteProduct(string sku);
 		public Task<ProductModel> AddProduct(AddProductModel product);
-		public Task UploadProducts(IFormFile csvFile);
+		public Task<List<FailedProductUpload>> UploadProducts(IFormFile csvFile);
 		public Task UploadPictures(IFormFile csvFile);
+		Task AddProduct(UploadProductModel product);
 	}
 }

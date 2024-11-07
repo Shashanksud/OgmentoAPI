@@ -24,6 +24,8 @@ using OgmentoAPI.Domain.Authorization.Abstractions.Dto;
 using OgmentoAPI.Domain.Client.Abstractions.Dto;
 using System;
 using OgmentoAPI.MapperConfig;
+using Azure.Storage.Queues;
+using Microsoft.Extensions.Options;
 
 
 namespace OgmentoAPI.Web
@@ -49,6 +51,12 @@ namespace OgmentoAPI.Web
 					   var appSettingsSection = Configuration.GetSection("ServiceConfiguration");
 			services.Configure<ServiceConfiguration>(appSettingsSection);
 			services.Configure<FilePaths>(Configuration.GetSection("FilePaths"));
+			services.Configure<AzureQueue>(Configuration.GetSection("AzureQueue"));
+			services.AddSingleton<QueueClient>(provider =>
+			 {
+				 AzureQueue azureQueue = provider.GetRequiredService<IOptions<AzureQueue>>().Value;
+				 return new QueueClient(azureQueue.ConnectionString, azureQueue.QueueName);
+			 });
 			string dbConnectionString = Configuration["ConnectionString:DefaultConnection"];
 			services.AddAuth(dbConnectionString)
 					.AddClient(dbConnectionString)
@@ -66,6 +74,7 @@ namespace OgmentoAPI.Web
 				ValidateAudience = false,
 				RequireExpirationTime = false,
 				ValidateLifetime = true
+
 			};
 			services.AddSingleton(tokenValidationParameters);
 			services.AddAuthentication(x =>
@@ -130,6 +139,8 @@ namespace OgmentoAPI.Web
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UseMiddleware<ExceptionHandler>();
+			app.UseSerilogRequestLogging();
 			app.UseCors("CorsPolicy");
 			if (!env.IsDevelopment())
 			{
@@ -141,8 +152,8 @@ namespace OgmentoAPI.Web
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseStaticFiles();
-			app.UseSerilogRequestLogging();
-			app.UseMiddleware<ExceptionHandler>();
+			
+			
 
 			app.UseEndpoints(endpoints =>
 			{

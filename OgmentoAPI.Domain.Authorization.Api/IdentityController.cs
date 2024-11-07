@@ -11,7 +11,8 @@ namespace OgmentoAPI.Domain.Authorization.Api
         private readonly IUserService _userService;
         private readonly ILogger<IdentityController> _logger;
         private UserModel _user;
-        public IdentityController(IUserService userService, ILogger<IdentityController> logger)
+		
+		public IdentityController(IUserService userService, ILogger<IdentityController> logger)
         {
             _logger = logger;
             _userService = userService;
@@ -20,7 +21,9 @@ namespace OgmentoAPI.Domain.Authorization.Api
         {
             int userId = 0;
             string? strUserId = User == null ? string.Empty : User.FindFirst(c => c.Type == CustomClaimTypes.UserId)?.Value;
-            int.TryParse(strUserId, out userId);
+			
+
+			int.TryParse(strUserId, out userId);
             if(userId == 0)
             {
                 throw new InvalidOperationException();

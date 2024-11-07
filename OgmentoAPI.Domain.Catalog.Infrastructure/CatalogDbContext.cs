@@ -12,7 +12,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure
 		public DbSet<Category> Category { get; set; }
 		public DbSet<ProductCategoryMapping> ProductCategoryMapping { get; set; }
 		public DbSet<ProductImageMapping> ProductImageMapping { get; set; }
-
+		public DbSet<ProductJson> ProductJson { get; set; }
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<Product>(entity =>
