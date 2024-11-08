@@ -56,7 +56,7 @@ namespace OgmentoAPI.Domain.Client.Services
 				SkuCode = product.SkuCode,
 				ProductId = planogram.ProductId,
 				MaxQuantity = planogram.MaxQuantity,
-				Quantity = planogram.Quatity,
+				Quantity = planogram.Quantity,
 			};
 		}
 		public async Task<List<TrayPogModel>> GetTrays(int machineId, int kioskId)
@@ -113,7 +113,7 @@ namespace OgmentoAPI.Domain.Client.Services
 				ProductId = productId,
 				BeltIsActive = addPogModel.BeltIsActive,
 				TrayIsActive = addPogModel.BeltIsActive,
-				Quatity = addPogModel.Quatity,
+				Quantity = addPogModel.Quantity,
 				MaxQuantity = addPogModel.MaxQuantity,
 			};
 			int rowsAffected = 0;

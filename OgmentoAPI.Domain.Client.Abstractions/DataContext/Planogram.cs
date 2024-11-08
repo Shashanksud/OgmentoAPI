@@ -11,7 +11,7 @@ namespace OgmentoAPI.Domain.Client.Abstractions.DataContext
 		public int TrayId { get; set; }
 		public int BeltId { get; set; }
 		public int ProductId { get; set; }
-		public int Quatity { get; set; }
+		public int Quantity { get; set; }
 		public int MaxQuantity { get; set; }
 		public bool TrayIsActive { get; set; }
 		public bool BeltIsActive { get; set; }
