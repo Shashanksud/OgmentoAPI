@@ -160,7 +160,7 @@ namespace OgmentoAPI.Domain.Client.Services
 				ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
 			};
 		}
-		public async Task<ResponseDto> UpdateStatus(StatusModel status)
+		public async Task<ResponseDto> UpdateBeltTrayActiveStatus(StatusPogModel status)
 		{
 			int? kioskId = await _kioskService.GetKioskId(status.KioskName);
 			if (!kioskId.HasValue)
@@ -168,7 +168,7 @@ namespace OgmentoAPI.Domain.Client.Services
 				throw new EntityNotFoundException($"{status.KioskName} not found in database.");
 			}
 			status.KioskId = kioskId.Value;
-			int rowsAffected = await _planogramRepository.UpdateStatus(status);
+			int rowsAffected = await _planogramRepository.UpdateBeltTrayActiveStatus(status);
 			return new ResponseDto
 			{
 				IsSuccess = rowsAffected > 0,

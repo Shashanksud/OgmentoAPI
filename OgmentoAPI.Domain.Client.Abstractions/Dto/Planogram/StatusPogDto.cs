@@ -1,7 +1,7 @@
 ﻿
 namespace OgmentoAPI.Domain.Client.Abstractions.Dto.Planogram
 {
-	public class StatusDto
+	public class StatusPogDto
 	{
 		public string KioskName {  get; set; }
 		public int MachineId {  get; set; }

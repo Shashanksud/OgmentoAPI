@@ -120,7 +120,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		{
 			return await _dbContext.Planogram.Where(x => x.KioskId == kioskId && x.MachineId == machineId).ToListAsync();
 		}
-		public async Task<int> UpdateStatus(StatusModel status)
+		public async Task<int> UpdateBeltTrayActiveStatus(StatusPogModel status)
 		{
 			if(status.BeltId == null)
 			{

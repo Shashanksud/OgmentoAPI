@@ -16,6 +16,6 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 		bool IsPlanogramExists(int kioskId, int machineId, int trayId, int beltId);
 		Task<int> DeleteBelt(Planogram planogram);
 		Task<int> DeletePlanograms(List<int> planogramIds);
-		Task<int> UpdateStatus(StatusModel status);
+		Task<int> UpdateBeltTrayActiveStatus(StatusPogModel status);
 	}
 }

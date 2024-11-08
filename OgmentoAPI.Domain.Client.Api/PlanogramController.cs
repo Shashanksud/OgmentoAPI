@@ -51,9 +51,9 @@ namespace OgmentoAPI.Domain.Client.Api
 		}
 		[HttpPut]
 		[Route("tray/status")]
-		public async Task<IActionResult> UpdateTrayStatus(StatusDto trayStatus)
+		public async Task<IActionResult> UpdateTrayStatus(StatusPogDto trayStatus)
 		{
-			ResponseDto response = await _planogramService.UpdateStatus(trayStatus.ToModel());
+			ResponseDto response = await _planogramService.UpdateBeltTrayActiveStatus(trayStatus.ToModel());
 			if (response.IsSuccess)
 			{
 				return Ok(response);
@@ -65,13 +65,13 @@ namespace OgmentoAPI.Domain.Client.Api
 		}
 		[HttpPut]
 		[Route("belt/status")]
-		public async Task<IActionResult> UpdateBeltStatus(StatusDto beltStatus)
+		public async Task<IActionResult> UpdateBeltStatus(StatusPogDto beltStatus)
 		{
 			if(beltStatus.BeltId == null)
 			{
 				throw new InvalidOperationException("beltId cannot be null while deleting a belt");
 			}
-			ResponseDto response = await _planogramService.UpdateStatus(beltStatus.ToModel());
+			ResponseDto response = await _planogramService.UpdateBeltTrayActiveStatus(beltStatus.ToModel());
 			if (response.IsSuccess)
 			{
 				return Ok(response);

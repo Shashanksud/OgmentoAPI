@@ -1,6 +1,6 @@
 ﻿namespace OgmentoAPI.Domain.Client.Abstractions.Models.Planogram
 {
-	public class StatusModel
+	public class StatusPogModel
 	{
 		public int? KioskId { get; set; }
 		public string KioskName { get; set; }
