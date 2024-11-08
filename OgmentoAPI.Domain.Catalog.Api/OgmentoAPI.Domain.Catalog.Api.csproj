@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OgmentoAPI.Domain.Catalog.Abstractions\OgmentoAPI.Domain.Catalog.Abstractions.csproj" />
+    <ProjectReference Include="..\OgmentoAPI.Domain.Catalog.Services\OgmentoAPI.Domain.Catalog.Services.csproj" />
     <ProjectReference Include="..\OgmentoAPI.Domain.Common.Services\OgmentoAPI.Domain.Common.Services.csproj" />
   </ItemGroup>
 
