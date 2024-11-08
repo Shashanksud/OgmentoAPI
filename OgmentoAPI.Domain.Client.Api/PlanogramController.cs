@@ -49,11 +49,11 @@ namespace OgmentoAPI.Domain.Client.Api
 				return BadRequest(response);
 			}
 		}
-		[HttpDelete]
-		[Route("tray")]
-		public async Task<IActionResult> DeleteTray(DeletePogDto pogDto)
+		[HttpPut]
+		[Route("tray/status")]
+		public async Task<IActionResult> UpdateTrayStatus(StatusDto trayStatus)
 		{
-			ResponseDto response = await _planogramService.DeleteTray(pogDto.ToModel());
+			ResponseDto response = await _planogramService.UpdateStatus(trayStatus.ToModel());
 			if (response.IsSuccess)
 			{
 				return Ok(response);
@@ -63,11 +63,15 @@ namespace OgmentoAPI.Domain.Client.Api
 				return BadRequest(response);
 			}
 		}
-		[HttpDelete]
-		[Route("machine")]
-		public async Task<IActionResult> DeleteMachine(DeletePogDto pogDto)
+		[HttpPut]
+		[Route("belt/status")]
+		public async Task<IActionResult> UpdateBeltStatus(StatusDto beltStatus)
 		{
-			ResponseDto response = await _planogramService.DeleteMachine(pogDto.ToModel());
+			if(beltStatus.BeltId == null)
+			{
+				throw new InvalidOperationException("beltId cannot be null while deleting a belt");
+			}
+			ResponseDto response = await _planogramService.UpdateStatus(beltStatus.ToModel());
 			if (response.IsSuccess)
 			{
 				return Ok(response);
@@ -77,5 +81,33 @@ namespace OgmentoAPI.Domain.Client.Api
 				return BadRequest(response);
 			}
 		}
+		//[HttpDelete]
+		//[Route("tray")]
+		//public async Task<IActionResult> DeleteTray(DeletePogDto pogDto)
+		//{
+		//	ResponseDto response = await _planogramService.DeleteTray(pogDto.ToModel());
+		//	if (response.IsSuccess)
+		//	{
+		//		return Ok(response);
+		//	}
+		//	else
+		//	{
+		//		return BadRequest(response);
+		//	}
+		//}
+		//[HttpDelete]
+		//[Route("machine")]
+		//public async Task<IActionResult> DeleteMachine(DeletePogDto pogDto)
+		//{
+		//	ResponseDto response = await _planogramService.DeleteMachine(pogDto.ToModel());
+		//	if (response.IsSuccess)
+		//	{
+		//		return Ok(response);
+		//	}
+		//	else
+		//	{
+		//		return BadRequest(response);
+		//	}
+		//}
 	}
 }

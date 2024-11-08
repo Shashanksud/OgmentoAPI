@@ -1,4 +1,5 @@
 ﻿using OgmentoAPI.Domain.Client.Abstractions.DataContext;
+using OgmentoAPI.Domain.Client.Abstractions.Models.Planogram;
 
 namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 {
@@ -15,5 +16,6 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 		bool IsPlanogramExists(int kioskId, int machineId, int trayId, int beltId);
 		Task<int> DeleteBelt(Planogram planogram);
 		Task<int> DeletePlanograms(List<int> planogramIds);
+		Task<int> UpdateStatus(StatusModel status);
 	}
 }
