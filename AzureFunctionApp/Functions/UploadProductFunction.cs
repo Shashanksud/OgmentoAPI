@@ -17,7 +17,7 @@ namespace AzureFunctionApp.Functions
 			_configuration = configuration;
 		}
 
-		[Function("Upload-Product")]
+		[Function("upload-product")]
 		public async Task ProcessProductMessage([QueueTrigger("%QueueName%", Connection = "AzureWebJobsStorage")] string message, FunctionContext context)
 		{
 			ILogger logger = context.GetLogger("UploadProductFunction");
