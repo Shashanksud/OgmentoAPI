@@ -149,6 +149,10 @@ namespace OgmentoAPI.Domain.Client.Services
 			{
 				throw new EntityNotFoundException("Unable to find the entry in database");
 			}
+			if(planogram.Quantity != 0)
+			{
+				throw new ValidationException("Cannot Delete a belt as it has products in it.");
+			}
 			int rowsAffected = await _planogramRepository.DeleteBelt(planogram);
 			return new ResponseDto
 			{
@@ -156,44 +160,59 @@ namespace OgmentoAPI.Domain.Client.Services
 				ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
 			};
 		}
+		public async Task<ResponseDto> UpdateBeltTrayActiveStatus(StatusPogModel status)
+		{
+			int? kioskId = await _kioskService.GetKioskId(status.KioskName);
+			if (!kioskId.HasValue)
+			{
+				throw new EntityNotFoundException($"{status.KioskName} not found in database.");
+			}
+			status.KioskId = kioskId.Value;
+			int rowsAffected = await _planogramRepository.UpdateBeltTrayActiveStatus(status);
+			return new ResponseDto
+			{
+				IsSuccess = rowsAffected > 0,
+				ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
+			};
+		}
+		//public async Task<ResponseDto> DeleteTray(DeletePogModel pogModel)
+		//{
+		//	int? kioskId = await _kioskService.GetKioskId(pogModel.KioskName);
+		//	if (!kioskId.HasValue)
+		//	{
+		//		throw new EntityNotFoundException($"{pogModel.KioskName} not found in database.");
+		//	}
+		//	if (pogModel.MachineId == null || pogModel.TrayId == null) {
+		//		throw new InvalidOperationException("MachineId or TrayId can't be null while deleting Tray.");
+		//	}
+		//	List<int> planograms = (await _planogramRepository.GetPlanogram(kioskId.Value, pogModel.MachineId.Value,pogModel.TrayId.Value)).Select(x=>x.PlanogramId).ToList();
+		//	int rowsAffected = await _planogramRepository.DeletePlanograms(planograms);
+		//	return new ResponseDto
+		//	{
+		//		IsSuccess = rowsAffected > 0,
+		//		ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
+		//	};
+		//}
+		//public async Task<ResponseDto> DeleteMachine(DeletePogModel pogModel)
+		//{
+		//	int? kioskId = await _kioskService.GetKioskId(pogModel.KioskName);
+		//	if (!kioskId.HasValue)
+		//	{
+		//		throw new EntityNotFoundException($"{pogModel.KioskName} not found in database.");
+		//	}
+		//	if (pogModel.MachineId == null)
+		//	{
+		//		throw new InvalidOperationException("MachineId can't be null while deleting Tray.");
+		//	}
+		//	List<int> planograms = (await _planogramRepository.GetPlanogram(kioskId.Value, pogModel.MachineId.Value)).Select(x => x.PlanogramId).ToList();
 
-		public async Task<ResponseDto> DeleteTray(DeletePogModel pogModel)
-		{
-			int? kioskId = await _kioskService.GetKioskId(pogModel.KioskName);
-			if (!kioskId.HasValue)
-			{
-				throw new EntityNotFoundException($"{pogModel.KioskName} not found in database.");
-			}
-			if (pogModel.MachineId == null || pogModel.TrayId == null) {
-				throw new InvalidOperationException("MachineId or TrayId can't be null while deleting Tray.");
-			}
-			List<int> planograms = (await _planogramRepository.GetPlanogram(kioskId.Value, pogModel.MachineId.Value,pogModel.TrayId.Value)).Select(x=>x.PlanogramId).ToList();
-			int rowsAffected = await _planogramRepository.DeletePlanograms(planograms);
-			return new ResponseDto
-			{
-				IsSuccess = rowsAffected > 0,
-				ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
-			};
-		}
-		public async Task<ResponseDto> DeleteMachine(DeletePogModel pogModel)
-		{
-			int? kioskId = await _kioskService.GetKioskId(pogModel.KioskName);
-			if (!kioskId.HasValue)
-			{
-				throw new EntityNotFoundException($"{pogModel.KioskName} not found in database.");
-			}
-			if (pogModel.MachineId == null)
-			{
-				throw new InvalidOperationException("MachineId can't be null while deleting Tray.");
-			}
-			List<int> planograms = (await _planogramRepository.GetPlanogram(kioskId.Value, pogModel.MachineId.Value)).Select(x => x.PlanogramId).ToList();
-			int rowsAffected = await _planogramRepository.DeletePlanograms(planograms);
-			return new ResponseDto
-			{
-				IsSuccess = rowsAffected > 0,
-				ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
-			};
-		}
+		//	int rowsAffected = await _planogramRepository.DeletePlanograms(planograms);
+		//	return new ResponseDto
+		//	{
+		//		IsSuccess = rowsAffected > 0,
+		//		ErrorMessage = (rowsAffected > 0) ? "No error" : "Unexpected error occured"
+		//	};
+		//}
 
 	}
 }

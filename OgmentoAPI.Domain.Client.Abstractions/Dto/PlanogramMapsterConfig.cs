@@ -22,6 +22,7 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 			TypeAdapterConfig<AddPogDto, AddPogModel>.NewConfig();
 			TypeAdapterConfig<DeletePogModel, DeletePogDto>.NewConfig();
 			TypeAdapterConfig<DeletePogDto, DeletePogModel>.NewConfig();
+			TypeAdapterConfig<StatusPogDto, StatusPogModel>.NewConfig();
 		}
 		public static AddPogDto ToDto(this AddPogModel addPogModel)
 		{
@@ -31,6 +32,10 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 		public static AddPogModel ToModel(this AddPogDto addPogDto)
 		{
 			return addPogDto.Adapt<AddPogModel>();
+		}
+		public static StatusPogModel ToModel(this StatusPogDto statusDto)
+		{
+			return statusDto.Adapt<StatusPogModel>();
 		}
 		public static DeletePogDto ToDto(this DeletePogModel deletePogModel)
 		{

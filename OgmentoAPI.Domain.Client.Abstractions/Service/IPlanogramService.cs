@@ -8,7 +8,8 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Service
 		Task<ResponseDto> SaveOrUpdatePOG(AddPogModel addPogModel);
 		Task<PlanogramModel> GetPOG(string kioskName);
 		Task<ResponseDto> DeleteBelt(DeletePogModel pogModel);
-		Task<ResponseDto> DeleteTray(DeletePogModel pogModel);
-		Task<ResponseDto> DeleteMachine(DeletePogModel pogModel);
+		Task<ResponseDto> UpdateBeltTrayActiveStatus(StatusPogModel trayStatus);
+		//Task<ResponseDto> DeleteTray(DeletePogModel pogModel);
+		//Task<ResponseDto> DeleteMachine(DeletePogModel pogModel);
 	}
 }

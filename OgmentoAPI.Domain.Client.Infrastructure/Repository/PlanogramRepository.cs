@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OgmentoAPI.Domain.Client.Abstractions.DataContext;
 using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
+using OgmentoAPI.Domain.Client.Abstractions.Models.Planogram;
 namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 {
 	public class PlanogramRepository : IPlanogramRepository
@@ -119,5 +120,17 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		{
 			return await _dbContext.Planogram.Where(x => x.KioskId == kioskId && x.MachineId == machineId).ToListAsync();
 		}
+		public async Task<int> UpdateBeltTrayActiveStatus(StatusPogModel status)
+		{
+			if(status.BeltId == null)
+			{
+				return await _dbContext.Planogram.Where(x => x.KioskId == status.KioskId && x.MachineId == status.MachineId && x.TrayId == status.TrayId).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.TrayIsActive, status.Status));
+			}
+			else
+			{
+				return await _dbContext.Planogram.Where(x => x.KioskId == status.KioskId && x.MachineId == status.MachineId && x.TrayId == status.TrayId && x.BeltId==status.BeltId).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.BeltIsActive, status.Status));
+			}
+		}
+
 	}
 }
