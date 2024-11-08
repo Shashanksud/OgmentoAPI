@@ -1,5 +1,4 @@
-﻿
-namespace OgmentoAPI.Domain.Client.Abstractions.Models.Planogram
+﻿namespace OgmentoAPI.Domain.Client.Abstractions.Models.Planogram
 {
 	public class StatusModel
 	{
