@@ -105,12 +105,6 @@ namespace OgmentoAPI.Domain.Client.Services
 		  _salesCenterRepository.DeleteSalesCenterUserMapping(userId);
 		}
 
-
-	}
-        public SalesCenter GetSalesCenterDetail(Guid salesCenterUid)
-        {
-            return _salesCenterRepository.GetSalesCenterDetail(salesCenterUid);
-        }
         //public int GetUserSalesCenterMappingId(Guid salesCenterUid)
         //{
         //    {

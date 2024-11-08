@@ -92,12 +92,6 @@ namespace OgmentoAPI.Domain.Catalog.Services
 						categoryIds.AddRange(subSubCategoryIds);
 					}
 				}
-				int rowsAffected = await _categoryRepository.DeleteCategories(categoryIds);
-				return new ResponseDto
-				{
-					IsSuccess = (rowsAffected > 0),
-					ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
-				};
 			}
 			int rowsAffected = await _categoryRepository.DeleteCategories(categoryIds);
 			return new ResponseDto
