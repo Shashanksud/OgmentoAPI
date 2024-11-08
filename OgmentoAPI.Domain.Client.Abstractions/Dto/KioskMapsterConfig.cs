@@ -1,6 +1,5 @@
 ﻿using OgmentoAPI.Domain.Client.Abstractions.Models;
 using Mapster;
-using OgmentoAPI.Domain.Client.Abstractions.DataContext;
 
 namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 {
@@ -26,16 +25,13 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Dto
 		{
 			return kioskDtos.Adapt<List<KioskModel>>();
 		}
-		public static KioskBeltModel ToModel(this KioskBeltDto kioskBeltDto)
-		{
-			return kioskBeltDto.Adapt<KioskBeltModel>();
-		}
+		
 
 		public static void RegisterKioskMappings()
 		{
 			TypeAdapterConfig<KioskModel, KioskDto>.NewConfig();
 			TypeAdapterConfig<KioskDto, KioskModel>.NewConfig();
-			TypeAdapterConfig<KioskBeltDto, KioskBeltModel>.NewConfig();
+			
 		}
 	    
 	

@@ -139,5 +139,9 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		{
 			_context.SalesCenterUserMapping.Where(x => x.UserId == userId).ExecuteDelete();
 		}
-	}
+		public async Task<SalesCenter> GetSalesCenter(int salesCenterId)
+		{
+			return await _context.SalesCenter.AsNoTracking().SingleAsync(x => x.ID == salesCenterId);
+		}
+    }
 }

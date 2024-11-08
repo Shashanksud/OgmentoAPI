@@ -43,37 +43,39 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[HttpPut]
 		public async Task<IActionResult> UpdateCategory(UpdateCategoryDto request)
 		{
-			try
+			ResponseDto response = await _categoryServices.UpdateCategory(request.CategoryUid, request.CategoryName);
+			if (response.IsSuccess)
 			{
-				ResponseDto response = await _categoryServices.UpdateCategory(request.CategoryUid, request.CategoryName);
-				if (response.IsSuccess)
-				{
-					return Ok(response);
-				}
-				else
-				{
-					return BadRequest(response);
-				}
+				return Ok(response);
 			}
-			catch (ValidationException ex)
+			else
 			{
-				return BadRequest(new ResponseDto
-				{
-					IsSuccess = false,
-					ErrorMessage = ex.Message,
-				});
+				return BadRequest(response);
 			}
-
 		}
 		[HttpDelete]
 		[Route("{categoryUid}")]
 		public async Task<IActionResult> DeleteCategory(Guid categoryUid)
 		{
-			try
+			ResponseDto response = await _categoryServices.DeleteCategory(categoryUid);
+			if (response.IsSuccess)
 			{
-				ResponseDto response = await _categoryServices.DeleteCategory(categoryUid);
+				return Ok(response);
+			}
+			else
+			{
+				return BadRequest(response);
+			}
+		}
+		[HttpPost]
+		[Route("json")]
+		public async Task<IActionResult> UploadCategories(IFormFile categoryJson)
+		{
+			if (categoryJson != null && categoryJson.Length > 0)
+			{
+				ResponseDto response = await _categoryServices.UploadCategories(categoryJson);
 				if (response.IsSuccess)
-				{ 
+				{
 					return Ok(response);
 				}
 				else
@@ -81,93 +83,35 @@ namespace OgmentoAPI.Domain.Catalog.Api
 					return BadRequest(response);
 				}
 			}
-			catch (ValidationException ex)
+			else
 			{
-				return BadRequest(new ResponseDto
-				{
-					IsSuccess = false,
-					ErrorMessage = ex.Message,
-				});
-			}
-
-		}
-		[HttpPost]
-		[Route("json")]
-		public async Task<IActionResult> UploadCategories(IFormFile categoryJson)
-		{
-			try
-			{
-				if (categoryJson != null && categoryJson.Length > 0)
-				{
-					ResponseDto response = await _categoryServices.UploadCategories(categoryJson);
-					if (response.IsSuccess)
-					{
-						return Ok(response);
-					}
-					else
-					{
-						return BadRequest(response);
-					}
-				}
-				else
-				{
-					throw new ValidationException("The uploaded file is either null or empty. Please upload a valid JSON file.");
-				}
-			}
-			catch (ValidationException ex)
-			{
-				return BadRequest(new ResponseDto
-				{
-					IsSuccess = false,
-					ErrorMessage = ex.Message,
-				});
+				throw new ValidationException("The uploaded file is either null or empty. Please upload a valid JSON file.");
 			}
 		}
 		[HttpPost]
 		public async Task<IActionResult> AddCategory(CategoryDto categoryDto)
 		{
-			try
+			if (categoryDto == null || string.IsNullOrEmpty(categoryDto.CategoryName))
 			{
-				if (categoryDto == null || string.IsNullOrEmpty(categoryDto.CategoryName))
-				{
-					throw new ValidationException("Category name cannot be null or empty.");
-				}
-				return Ok((await _categoryServices.AddCategory(categoryDto.ToModel())).ToDto());
+				throw new ValidationException("Category name cannot be null or empty.");
 			}
-			catch (ValidationException ex)
-			{
-				return BadRequest(new ResponseDto
-				{
-					IsSuccess = false,
-					ErrorMessage = ex.Message,
-				});
-			}
+			return Ok((await _categoryServices.AddCategory(categoryDto.ToModel())).ToDto());
 		}
 		[HttpGet]
 		[Route("sample")]
 		public async Task<IActionResult> DownloadSampleCategory()
 		{
-			try
+			string sampleJsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _categorySampleJsonPath);
+			if (System.IO.File.Exists(sampleJsonPath))
 			{
-				string sampleJsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _categorySampleJsonPath);
-				if (System.IO.File.Exists(sampleJsonPath))
-				{
-					byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(sampleJsonPath);
-					string fileName = Path.GetFileName(sampleJsonPath);
+				byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(sampleJsonPath);
+				string fileName = Path.GetFileName(sampleJsonPath);
 
-					return File(fileBytes, "application/json", fileName);
-				}
-				else
-				{
-					throw new InvalidOperationException("JSON file not found.");
-				}
+				return File(fileBytes, "application/json", fileName);
 			}
-			catch (ValidationException ex) {
-				return BadRequest(new ResponseDto
-				{
-					IsSuccess = false,
-					ErrorMessage = ex.Message,
-				});
+			else
+			{
+				throw new InvalidOperationException("JSON file not found.");
 			}
 		}
 	}

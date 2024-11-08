@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OgmentoAPI.Domain.Catalog.Abstractions\OgmentoAPI.Domain.Catalog.Abstractions.csproj" />
     <ProjectReference Include="..\OgmentoAPI.Domain.Common.Abstractions\OgmentoAPI.Domain.Common.Abstractions.csproj" />
   </ItemGroup>
 

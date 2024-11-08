@@ -3,7 +3,6 @@ using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
 
-
 namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 {
 	public class ProductRepository: IProductRepository
@@ -23,6 +22,10 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		public async Task<Product?> GetProduct(string sku)
 		{
 			return await _dbContext.Product.FirstOrDefaultAsync(x => x.SkuCode == sku);
+		}
+		public async Task<Product?> GetProduct(int productId)
+		{
+			return await _dbContext.Product.FirstOrDefaultAsync(x => x.ProductID == productId);
 		}
 		public async Task<List<Product>> GetAllProducts()
 		{
@@ -99,6 +102,10 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		public async Task<ProductUploads> GetProductUploads(String sku)
 		{
 			return await _dbContext.ProductUploads.FirstAsync(x=>x.Sku == sku);
+		}
+		public async Task<int?> GetProductId(string sku)
+		{
+			return (await _dbContext.Product.SingleOrDefaultAsync(x => x.SkuCode == sku))?.ProductID;
 		}
 	}
 }

@@ -18,5 +18,7 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 		Task SaveProductUpload(UploadProductModel product);
 		Task<bool> IsSkuExists(string sku);
 		Task<List<FailedProductUpload>> FailedProductUploads();
+		Task<ProductBase> GetProduct(int productId);
+		Task<int> GetProductId(string sku);
 	}
 }

@@ -10,6 +10,8 @@ using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 using OgmentoAPI.Domain.Common.Abstractions.Dto;
 using OgmentoAPI.Domain.Common.Abstractions.Models;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
+using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
+using System.Globalization;
 
 namespace OgmentoAPI.Domain.Catalog.Services
 {
@@ -29,8 +31,16 @@ namespace OgmentoAPI.Domain.Catalog.Services
 		private async Task<List<PictureModel>> GetImages(int productId)
 		{
 			List<int> pictureIds = await _productRepository.GetImages(productId);
-			List<PictureModel> pictureModels = await _pictureServices.GetPictures(pictureIds);
-			return pictureModels;
+			return await _pictureServices.GetPictures(pictureIds);
+		}
+		public async Task<int> GetProductId(string sku)
+		{
+			int? productId = await _productRepository.GetProductId(sku);
+			if(!productId.HasValue)
+			{
+				throw new EntityNotFoundException($"{sku} not found in database");
+			}
+			return productId.Value;
 		}
 		private async Task<CategoryModel> GetCategory(int productId)
 		{
@@ -134,7 +144,6 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			{
 				throw new ValidationException($"Product with skucode: {productModel.SkuCode} already exists. Please give different code.");
 			}
-
 			Product product = new Product()
 			{
 				SkuCode = productModel.SkuCode,
@@ -171,6 +180,25 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
 			};
 		}
+
+		public async Task<ProductBase> GetProduct(int productId)
+		{
+			Product? product = await _productRepository.GetProduct(productId);
+			if (product == null) {
+				throw new EntityNotFoundException("product not found in database");
+			}
+			return new ProductBase
+			{
+				Price = product.Price,
+				ProductDescription = product.ProductDescription,
+				ProductName = product.ProductName,
+				ExpiryDate = product.ExpiryDate,
+				Weight = product.Weight,
+				LoyaltyPoints = product.LoyaltyPoints==null ? 0: product.LoyaltyPoints.Value,
+				SkuCode = product.SkuCode,
+			};
+		}
+
 		public async Task SaveProductUpload(UploadProductModel product)
 		{
 			if (await IsSkuExists(product.SkuCode))

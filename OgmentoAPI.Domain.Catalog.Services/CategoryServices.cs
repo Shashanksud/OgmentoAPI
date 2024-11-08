@@ -74,43 +74,31 @@ namespace OgmentoAPI.Domain.Catalog.Services
 		
 		public async Task<ResponseDto> DeleteCategory(Guid categoryUid)
 		{
-			try
+			int categoryId = await GetCategoryId(categoryUid);
+			List<int> categoryIds = new List<int> { categoryId };
+			if (!_categoryRepository.IsSafeDelete(categoryId))
 			{
-				int categoryId = await GetCategoryId(categoryUid);
-				List<int> categoryIds = new List<int> { categoryId };
-				if (!_categoryRepository.IsSafeDelete(categoryId))
+				throw new ValidationException($"Category:{categoryUid} cannot be deleted as it is mapped with a product");
+			}
+			if (_categoryRepository.CheckSubCategoriesExists(categoryId))
+			{
+				List<int> subCategoryIds = (await _categoryRepository.GetSubCategories(categoryId)).Select(x => x.CategoryID).ToList();
+				categoryIds.AddRange(subCategoryIds);
+				foreach (int subCategoryId in subCategoryIds)
 				{
-					throw new ValidationException($"Category:{categoryUid} cannot be deleted as it is mapped with a product");
-				}
-				if (_categoryRepository.CheckSubCategoriesExists(categoryId))
-				{
-					List<int> subCategoryIds = (await _categoryRepository.GetSubCategories(categoryId)).Select(x => x.CategoryID).ToList();
-					categoryIds.AddRange(subCategoryIds);
-					foreach (int subCategoryId in subCategoryIds)
+					if (_categoryRepository.CheckSubCategoriesExists(subCategoryId))
 					{
-						if (_categoryRepository.CheckSubCategoriesExists(subCategoryId))
-						{
-							List<int> subSubCategoryIds = (await _categoryRepository.GetSubCategories(subCategoryId)).Select(x => x.CategoryID).ToList();
-							categoryIds.AddRange(subSubCategoryIds);
-						}
+						List<int> subSubCategoryIds = (await _categoryRepository.GetSubCategories(subCategoryId)).Select(x => x.CategoryID).ToList();
+						categoryIds.AddRange(subSubCategoryIds);
 					}
 				}
-				int rowsAffected = await _categoryRepository.DeleteCategories(categoryIds);
-				return new ResponseDto
-				{
-					IsSuccess = (rowsAffected > 0),
-					ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
-				};
 			}
-			
-			catch (ValidationException ex)
+			int rowsAffected = await _categoryRepository.DeleteCategories(categoryIds);
+			return new ResponseDto
 			{
-				return new ResponseDto
-				{
-					ErrorMessage = $"Action Denied: {ex.Message}",
-					IsSuccess = false
-				};
-			}
+				IsSuccess = (rowsAffected > 0),
+				ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
+			};
 		}
 		public async Task<ResponseDto> UpdateCategory(Guid categoryUid, string categoryName)
 		{
