@@ -93,7 +93,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 				IsDeleted = kioskModel.IsDeleted,
 			};
 			_context.Kiosk.Add(kiosk);
-		
+			int rowsAdded = await _context.SaveChangesAsync();
 			if (rowsAdded == 0)
 			{
 				throw new DatabaseOperationException("Unable to add Kiosk.");
