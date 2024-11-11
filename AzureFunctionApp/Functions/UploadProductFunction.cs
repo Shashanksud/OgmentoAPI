@@ -53,9 +53,11 @@ namespace AzureFunctionApp.Functions
 			_tokenExpiryTime = DateTime.UtcNow.AddMinutes(45);
 		}
 
-		private async Task UploadProductAsync(UploadProductModel product, string authToken)
+		private async Task UploadProductAsync(UploadProductModel product, string authTokenJson)
 		{
-			
+			// Extract the token from the JSON object
+			string authToken = JsonSerializer.Deserialize<Dictionary<string, string>>(authTokenJson)["token"];
+
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
 			string jsonString = JsonSerializer.Serialize(product);
 			StringContent content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");

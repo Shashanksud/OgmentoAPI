@@ -62,8 +62,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		}
 		public async Task<int> AddProduct(Product product)
 		{
-			await _dbContext.Product.AddAsync(product);
-			return await _dbContext.SaveChangesAsync();
+			var productEntryContext =  await _dbContext.Product.AddAsync(product);
+			await _dbContext.SaveChangesAsync();
+			return productEntryContext.Entity.ProductID;
 		}
 		public async Task<bool> IsSkuExists(string sku)
 		{
@@ -91,7 +92,7 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 
 		public async Task<int> AddProductUploads(ProductUploads product)
 		{
-			_dbContext.ProductUploads.Add(product);
+			await _dbContext.ProductUploads.AddAsync(product);
 			return await _dbContext.SaveChangesAsync();
 		}
 		public async Task<int> UpdateProductUploads(ProductUploads product)

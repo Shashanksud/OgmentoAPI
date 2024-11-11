@@ -164,12 +164,12 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				ExpiryDate = productModel.ExpiryDate,
 				Weight = productModel.Weight,
 			};
-			int rowsAffected = await _productRepository.AddProduct(product);
-			if (rowsAffected == 0)
+			int productId = await _productRepository.AddProduct(product);
+			if (productId <= 0)
 			{
 				throw new DatabaseOperationException($"unable to add Product {productModel.SkuCode}.");
 			}
-			ProductModel productAdded = await GetProduct(productModel.SkuCode);
+		
 
 			if (productModel.Categories.Count != 0)
 			{
@@ -178,16 +178,16 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				{
 					categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
 				}
-				await AddProductCategoryMapping(categoryIds, productAdded.ProductId);
+				await AddProductCategoryMapping(categoryIds, productId);
 			}
 			if (productModel.Images.Count != 0)
 			{
-				await AddProductImageMapping(productModel.Images, productAdded.ProductId);
+				await AddProductImageMapping(productModel.Images, productId);
 			}
 			return new ResponseDto
 			{
-				IsSuccess = (rowsAffected > 0),
-				ErrorMessage = (rowsAffected == 0) ? "Zero rows Updated" : "No Error"
+				IsSuccess = (productId > 0),
+				ErrorMessage = (productId <= 0) ? "Zero rows Updated" : "No Error"
 			};
 		}
 
@@ -262,7 +262,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			}
 			else
 			{
-				AddProductModel productModel = new AddProductModel
+				Product productModel = new Product
 				{
 					Price = product.Price,
 					ExpiryDate = product.ExpiryDate,
@@ -272,13 +272,13 @@ namespace OgmentoAPI.Domain.Catalog.Services
 					LoyaltyPoints = product.LoyaltyPoints,
 					Weight = product.Weight,
 				};
-				await AddProduct(productModel);
-				int? productId = (await _productRepository.GetProduct(product.SkuCode))?.ProductID;
-				if (productId == null)
+				var productId = await _productRepository.AddProduct(productModel);
+				
+				if (productId <= 0)
 				{
 					throw new DatabaseOperationException("Product did not get added in the database.");
 				}
-				await AddProductCategoryMapping(product.CategoryIds, productId.Value);
+				await AddProductCategoryMapping(product.CategoryIds, productId);
 			}
 		}
 		public async Task<ResponseDto> DeletePicture(string hash)
