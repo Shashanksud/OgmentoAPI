@@ -93,7 +93,7 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 				IsDeleted = kioskModel.IsDeleted,
 			};
 			_context.Kiosk.Add(kiosk);
-			int rowsAdded =await _context.SaveChangesAsync();
+		
 			if (rowsAdded == 0)
 			{
 				throw new DatabaseOperationException("Unable to add Kiosk.");
@@ -107,5 +107,10 @@ namespace OgmentoAPI.Domain.Client.Infrastructure.Repository
 		{
 			return await _context.Kiosk.SingleAsync(x => x.ID == kioskId);
 		}
+		public bool GetKioskCountBySalesCenter(int salesCenterId)
+		{
+			return _context.Kiosk.Any(k => k.SalesCenterId == salesCenterId);
+		}
+
 	}
 }

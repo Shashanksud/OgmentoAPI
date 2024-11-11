@@ -4,6 +4,7 @@ using OgmentoAPI.Domain.Client.Abstractions.Models;
 using OgmentoAPI.Domain.Client.Abstractions.Repositories;
 using OgmentoAPI.Domain.Client.Abstractions.Service;
 using OgmentoAPI.Domain.Client.Infrastructure.Repository;
+using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 using System.Linq.Expressions;
 
 namespace OgmentoAPI.Domain.Client.Services
@@ -11,9 +12,12 @@ namespace OgmentoAPI.Domain.Client.Services
 	public class SalesCenterService : ISalesCenterService
 	{
 		private readonly ISalesCenterRepository _salesCenterRepository;
-		public SalesCenterService(ISalesCenterRepository salesCenterRepository)
+		private readonly IKioskRepository _kioskRepository;
+
+		public SalesCenterService(ISalesCenterRepository salesCenterRepository, IKioskRepository kioskRepository)
 		{
 			_salesCenterRepository = salesCenterRepository;
+			_kioskRepository = kioskRepository;
 		}
 		public IEnumerable<SalesCenter> GetSalesCenterForUser(int Id)
 		{
@@ -68,20 +72,24 @@ namespace OgmentoAPI.Domain.Client.Services
 
 		public int? DeleteSalesCenter(Guid salesCenterUid)
 		{
-			try
+
+			int salesCenterUserCount = _salesCenterRepository.GetUserSalesCenterMappingId(salesCenterUid);
+			if (salesCenterUserCount > 0)
 			{
-				int salesCenterUserCount = _salesCenterRepository.GetUserSalesCenterMappingId(salesCenterUid);
-				if (salesCenterUserCount > 0)
-				{
-					throw new Exception("CannotDelete");
-				}
-				return _salesCenterRepository.DeleteSalesCenter(salesCenterUid);
+				throw new ValidationException("Cannot delete SalesCenter: it has associated User.");
 			}
-			catch (Exception ex)
+			int salesCenterId = _salesCenterRepository.GetSalesCenterDetail(salesCenterUid).ID;
+			bool linkedKioskCount = _kioskRepository.GetKioskCountBySalesCenter(salesCenterId);
+			if (linkedKioskCount)
 			{
-				throw ex;
+				throw new ValidationException("Cannot delete SalesCenter: it has associated kiosk.");
 			}
+
+			return _salesCenterRepository.DeleteSalesCenter(salesCenterUid);
+
 		}
+
+
 
 		public SalesCenter GetSalesCenterDetail(Guid salesCenterUid)
 		{
