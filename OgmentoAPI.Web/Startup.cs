@@ -58,11 +58,12 @@ namespace OgmentoAPI.Web
 				 return new QueueClient(azureQueue.ConnectionString, azureQueue.QueueName);
 			 });
 			string dbConnectionString = Configuration["ConnectionString:DefaultConnection"];
+			
 			services.AddAuth(dbConnectionString)
 					.AddClient(dbConnectionString)
 					.AddCommon(dbConnectionString)
 					.AddCatalog(dbConnectionString);
-
+			
 			// configure jwt authentication
 			var serviceConfiguration = appSettingsSection.Get<ServiceConfiguration>();
 			var JwtSecretkey = Encoding.ASCII.GetBytes(serviceConfiguration.JwtSettings.Secret);

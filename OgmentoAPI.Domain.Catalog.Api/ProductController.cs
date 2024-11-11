@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
+using OgmentoAPI.Domain.Catalog.Services;
 using OgmentoAPI.Domain.Catalog.Services.Shared;
 using OgmentoAPI.Domain.Common.Abstractions;
 using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
@@ -18,12 +20,14 @@ namespace OgmentoAPI.Domain.Catalog.Api
 	public class ProductController : ControllerBase
 	{
 		private readonly IProductServices _productServices;
+		private readonly ProductUploadBackgroundService _backgroundServices;
 		private readonly string sampleCsvRelativePath;
 		
-		public ProductController(IProductServices productServices, IOptions<FilePaths> filePaths)
+		public ProductController(IProductServices productServices, IOptions<FilePaths> filePaths, ProductUploadBackgroundService backgroundService)
 		{
 			sampleCsvRelativePath = filePaths.Value.ProductSampleCsv;
 			_productServices = productServices;
+			_backgroundServices = backgroundService;
 		}
 
 		[HttpGet]
@@ -80,7 +84,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			try
 			{
 				List<UploadProductModel> products = CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(file);
-				_ = _productServices.UploadProducts(products);
+				_ = _backgroundServices.UploadProductsInBackground(products);
 			}
 			catch(InvalidDataException ex)
 			{

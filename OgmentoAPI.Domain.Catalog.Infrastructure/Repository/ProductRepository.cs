@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
@@ -62,8 +63,9 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		}
 		public async Task<int> AddProduct(Product product)
 		{
-			await _dbContext.Product.AddAsync(product);
-			return await _dbContext.SaveChangesAsync();
+			EntityEntry<Product> productEntity = await _dbContext.Product.AddAsync(product);
+			await _dbContext.SaveChangesAsync();
+			return productEntity.Entity.ProductID;
 		}
 		public async Task<bool> IsSkuExists(string sku)
 		{
