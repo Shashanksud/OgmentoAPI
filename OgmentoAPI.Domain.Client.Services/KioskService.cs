@@ -53,8 +53,6 @@ namespace OgmentoAPI.Domain.Client.Services
 		}
 		public async Task  DeleteKioskByName(string kioskName)
 		{
-			//todo need to delete sales center linked with kioskpzs
-
 			await _kioskRepository.DeleteKioskByName(kioskName);
 		}
 		public async Task AddKiosk(KioskModel kioskModel)
@@ -80,6 +78,10 @@ namespace OgmentoAPI.Domain.Client.Services
 			SalesCenterModel kioskSalesCenter = await _salesCenterService.GetSalesCenter(kiosk.SalesCenterId);
 			kioskModel.SalesCenter = Tuple.Create(kioskSalesCenter.SalesCenterUid, kioskSalesCenter.SalesCenterName);
 			return kioskModel;
+		}
+		public bool GetKioskCountBySalesCenter(int salesCenterId)
+		{
+			return _kioskRepository.GetKioskCountBySalesCenter(salesCenterId);
 		}
 	}
 }

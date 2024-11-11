@@ -12,5 +12,6 @@ namespace OgmentoAPI.Domain.Client.Abstractions.Repositories
 		public Task AddKiosk(KioskModel kioskModel);
 		Task<int?> GetKioskId(string kioskName);
 		Task<Kiosk> GetKiosk(int kioskId);
+		bool GetKioskCountBySalesCenter(int salesCenterId);
 	}
 }
