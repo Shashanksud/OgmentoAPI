@@ -10,8 +10,6 @@ using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 using OgmentoAPI.Domain.Common.Abstractions.Dto;
 using OgmentoAPI.Domain.Common.Abstractions.Models;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
-using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
-using System.Globalization;
 
 namespace OgmentoAPI.Domain.Catalog.Services
 {
@@ -140,10 +138,22 @@ namespace OgmentoAPI.Domain.Catalog.Services
 		}
 		public async Task<ResponseDto> AddProduct(AddProductModel productModel)
 		{
-			if (await IsSkuExists(productModel.SkuCode))
+			ProductBase productBase = new ProductBase
 			{
-				throw new ValidationException($"Product with skucode: {productModel.SkuCode} already exists. Please give different code.");
+				Price = productModel.Price,
+				ProductDescription = productModel.ProductDescription,
+				ProductName = productModel.ProductName,
+				ExpiryDate = productModel.ExpiryDate,
+				Weight = productModel.Weight,
+				LoyaltyPoints = productModel.LoyaltyPoints,
+				SkuCode = productModel.SkuCode,
+			};
+			string exceptionMessage = await ValidateProduct(productBase);
+			if (!string.IsNullOrEmpty(exceptionMessage))
+			{
+				throw new ValidationException($"{exceptionMessage}");
 			}
+
 			Product product = new Product()
 			{
 				SkuCode = productModel.SkuCode,
@@ -198,20 +208,55 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				SkuCode = product.SkuCode,
 			};
 		}
-
-		public async Task SaveProductUpload(UploadProductModel product)
+		private async Task<String> ValidateProduct(ProductBase product)
 		{
+			string exceptionMessage = string.Empty;
 			if (await IsSkuExists(product.SkuCode))
 			{
-				ProductUploads productUploads = await _productRepository.GetProductUploads(product.SkuCode);
-				if (productUploads.IsSuccess)
+				exceptionMessage += $"Product {product.SkuCode} already exists in the database.";
+			}
+			if (product.Weight > 1600)
+			{
+				exceptionMessage += $"Product {product.SkuCode} weight exceeds 1600 grams.";
+			}
+			if(product.ExpiryDate <= DateOnly.FromDateTime(DateTime.Now))
+			{
+				exceptionMessage += $"Product {product.SkuCode} is expired or will expire soon.";
+			}
+			return exceptionMessage;
+		}
+		public async Task SaveProductUpload(UploadProductModel product)
+		{
+			ProductUploads productUploads = await _productRepository.GetProductUploads(product.SkuCode);
+			ProductBase productBase = new ProductBase
+			{
+				Price = product.Price,
+				ProductDescription = product.ProductDescription,
+				ProductName = product.ProductName,
+				ExpiryDate = product.ExpiryDate,
+				Weight = product.Weight,
+				LoyaltyPoints = product.LoyaltyPoints,
+				SkuCode = product.SkuCode,
+			};
+			string exceptionMessage = await ValidateProduct(productBase);
+			if (product.CategoryIds.Count == 1)
+			{
+				exceptionMessage += $"Product {product.SkuCode} must include a main category and atleast one sub category.";
+			}
+			else
+			{
+				exceptionMessage += _categoryServices.ValidateCategories(product.CategoryIds);
+			}
+			if (!string.IsNullOrEmpty(exceptionMessage))
+			{
+				if (!productUploads.IsSuccess)
 				{
-					productUploads.IsSuccess = false;
-					productUploads.ExceptionMessage = $"Product {product.SkuCode} already exists in the database.";
+					productUploads.ExceptionMessage += exceptionMessage;
 				}
 				else
 				{
-					productUploads.ExceptionMessage += $"Product {product.SkuCode} already exists in the database.";
+					productUploads.IsSuccess = false;
+					productUploads.ExceptionMessage = exceptionMessage;
 				}
 				await _productRepository.UpdateProductUploads(productUploads);
 			}
@@ -343,9 +388,8 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			await _productRepository.AddProductImageMapping(productImages);
 		}
 
-		public async Task UploadProducts(IFormFile csvFile)
+		public async Task UploadProducts(List<UploadProductModel> products)
 		{
-			List<UploadProductModel> products = CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(csvFile);
 			foreach (UploadProductModel product in products)
 			{
 				string productString = JsonConvert.SerializeObject(product);
@@ -355,9 +399,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 					IsSuccess = false,
 					Sku = product.SkuCode
 				};
-				
 				int rowAffected = await _productRepository.AddProductUploads(productUpload);
-				
 				try
 				{
 					await _azureQueueService.AddMessageAsync(productString);

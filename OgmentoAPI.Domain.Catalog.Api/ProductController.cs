@@ -6,7 +6,9 @@ using Microsoft.Extensions.Options;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
+using OgmentoAPI.Domain.Catalog.Services.Shared;
 using OgmentoAPI.Domain.Common.Abstractions;
+using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 
 namespace OgmentoAPI.Domain.Catalog.Api
 {
@@ -75,7 +77,15 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			{
 				throw new InvalidOperationException("The uploaded file is either null or empty. Please upload a valid CSV file.");
 			}
-			await _productServices.UploadProducts(file);
+			try
+			{
+				List<UploadProductModel> products = CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(file);
+				_ = _productServices.UploadProducts(products);
+			}
+			catch(InvalidDataException ex)
+			{
+				throw new ValidationException($"{ex}");
+			}
 			return Ok();
 		}
 		[HttpPost]

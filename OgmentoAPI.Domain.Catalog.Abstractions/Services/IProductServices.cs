@@ -13,7 +13,7 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 		Task<ResponseDto> DeleteProduct(string sku);
 		Task<ResponseDto> AddProduct(AddProductModel productModel);
 		Task UploadPictures(IFormFile csvFile);
-		Task UploadProducts(IFormFile csvFile);
+		Task UploadProducts(List<UploadProductModel> products);
 		Task<ResponseDto> DeletePicture(string hash);
 		Task SaveProductUpload(UploadProductModel product);
 		Task<bool> IsSkuExists(string sku);

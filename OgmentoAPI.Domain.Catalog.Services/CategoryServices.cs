@@ -26,6 +26,31 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			}
 			return categoryUid.Value;
 		}
+		public string ValidateCategories(List<int> categoryIds)
+		{
+			List<Category> categories = categoryIds.Select(x=>_categoryRepository.GetCategory(x).GetAwaiter().GetResult()).ToList();
+			int parentCategoryCount = categories.Where(x => x.ParentCategoryId == 1).Count();
+			if (parentCategoryCount != 1)
+			{
+				return "There should be only one main category.";
+			}
+			else
+			{
+				int parentCategoryId = categories.First(x => x.ParentCategoryId == 1).CategoryID;
+				List<int> subCategoryIds = categories.Where(x => x.ParentCategoryId == parentCategoryId).Select(x=>x.CategoryID).ToList();
+				List<int> subSubCategoryIds = new List<int>();
+				foreach (int subCategoryId in subCategoryIds)
+				{
+					subSubCategoryIds.AddRange(categories.Where(x => x.ParentCategoryId == subCategoryId).Select(x => x.CategoryID).ToList());
+				}
+				if (subSubCategoryIds.Count + subCategoryIds.Count != categoryIds.Count - 1)
+				{
+					List<int> invalidCategoryIds = categoryIds.Where(x => x != parentCategoryId && !subCategoryIds.Contains(x) && !subSubCategoryIds.Contains(x)).ToList();
+					return $"{invalidCategoryIds} are not subcategories of {parentCategoryId}";
+				}
+				return string.Empty;
+			}
+		}
 		public async Task<int> GetCategoryId(Guid categoryUid)
 		{
 			int? categoryId = await _categoryRepository.GetCategoryIdAsync(categoryUid);
