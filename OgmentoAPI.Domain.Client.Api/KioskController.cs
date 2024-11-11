@@ -4,25 +4,24 @@ using OgmentoAPI.Domain.Client.Abstractions.Dto;
 using OgmentoAPI.Domain.Client.Abstractions.Models;
 using OgmentoAPI.Domain.Client.Abstractions.Service;
 
-[ApiController]
-[Authorize]
-[Route("api/[controller]")]
-public class KioskController : ControllerBase
+namespace OgmentoAPI.Domain.Client.Api.Kiosk
 {
-	private readonly IKioskService _kioskService;
 
-	public KioskController(IKioskService kioskService)
+	[ApiController]
+	[Authorize]
+	[Route("api/[controller]")]
+	public class KioskController : ControllerBase
 	{
 		_kioskService = kioskService;
 	}
 
-	[HttpGet]
-	public IActionResult GetKioskDetails()
-	{
-		List<KioskModel> result = _kioskService.GetKioskDetails();
-		List<KioskDto> response = result.ToDto();
-		return Ok(response);
-	}
+		[HttpGet]
+		public IActionResult GetKioskDetails()
+		{
+			List<KioskModel> result = _kioskService.GetKioskDetails();
+			List<KioskDto> response = result.ToDto();
+			return Ok(response);
+		}
 
 	[Route("addkiosk")]
 	[HttpPost]
@@ -41,11 +40,12 @@ public class KioskController : ControllerBase
 	}
 
 	[Route("delete/{kioskName}")]
-	[HttpDelete]
+		[HttpDelete]
 	public async Task<IActionResult> DeleteKiosk(string kioskName)
-	{
+		{
 		await _kioskService.DeleteKioskByName(kioskName);
 		return Ok();
+		}
 	}
 
 
