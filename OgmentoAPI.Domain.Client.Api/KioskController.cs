@@ -12,9 +12,11 @@ namespace OgmentoAPI.Domain.Client.Api.Kiosk
 	[Route("api/[controller]")]
 	public class KioskController : ControllerBase
 	{
-		_kioskService = kioskService;
-	}
-
+		private readonly IKioskService _kioskService;
+		public KioskController(IKioskService kioskService)
+		{
+			_kioskService = kioskService;
+		}
 		[HttpGet]
 		public IActionResult GetKioskDetails()
 		{
@@ -23,30 +25,29 @@ namespace OgmentoAPI.Domain.Client.Api.Kiosk
 			return Ok(response);
 		}
 
-	[Route("addkiosk")]
-	[HttpPost]
-	public async Task<IActionResult> AddKiosk(KioskDto kioskdto)
-	{
-		await _kioskService.AddKiosk(kioskdto.ToModel());
-		return Ok();
-	}
-
-	[HttpPut]
-	[Route("update/{kioskName}/{salesCenterUid}")]
-	public async Task<IActionResult> UpdateKioskDetails(string kioskName, Guid salesCenterUid)
-	{
-		await _kioskService.UpdateKioskDetails(kioskName, salesCenterUid);
-		return Ok();
-	}
-
-	[Route("delete/{kioskName}")]
-		[HttpDelete]
-	public async Task<IActionResult> DeleteKiosk(string kioskName)
+		[Route("addkiosk")]
+		[HttpPost]
+		public async Task<IActionResult> AddKiosk(KioskDto kioskdto)
 		{
-		await _kioskService.DeleteKioskByName(kioskName);
-		return Ok();
+			await _kioskService.AddKiosk(kioskdto.ToModel());
+			return Ok();
+		}
+
+		[HttpPut]
+		[Route("update/{kioskName}/{salesCenterUid}")]
+		public async Task<IActionResult> UpdateKioskDetails(string kioskName, Guid salesCenterUid)
+		{
+			await _kioskService.UpdateKioskDetails(kioskName, salesCenterUid);
+			return Ok();
+		}
+
+		[Route("delete/{kioskName}")]
+		[HttpDelete]
+		public async Task<IActionResult> DeleteKiosk(string kioskName)
+		{
+			await _kioskService.DeleteKioskByName(kioskName);
+			return Ok();
 		}
 	}
-
-
 }
+
