@@ -48,8 +48,8 @@ namespace AzureFunctionApp.Functions
 		}
 		private async Task RefreshAuthTokenAsync(ILogger logger)
 		{
-			LoginModel loginDto = new LoginModel { Email = _configuration["ApiCredentials:Email"], Password = _configuration["ApiCredentials:Password"] };
-			logger.LogInformation($"login email: {loginDto.Email} , password: {loginDto.Password} ");
+			LoginModel loginDto = new LoginModel { email = _configuration["ApiCredentials:Email"], password = _configuration["ApiCredentials:Password"] };
+			logger.LogInformation($"login email: {loginDto.email} , password: {loginDto.password} ");
 			StringContent content = new StringContent(JsonSerializer.Serialize(loginDto), System.Text.Encoding.UTF8, "application/json");
 
 			string loginUrl = _configuration["LoginUrl"];
