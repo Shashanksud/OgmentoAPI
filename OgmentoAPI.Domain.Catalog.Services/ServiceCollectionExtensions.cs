@@ -1,13 +1,10 @@
 ﻿using Azure.Storage.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
 using OgmentoAPI.Domain.Catalog.Infrastructure;
 using OgmentoAPI.Domain.Catalog.Infrastructure.Repository;
-using OgmentoAPI.Domain.Common.Abstractions;
 using OgmentoAPI.Domain.Common.Abstractions.Repository;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
 using OgmentoAPI.Domain.Common.Infrastructure.Repository;
@@ -20,7 +17,6 @@ namespace OgmentoAPI.Domain.Catalog.Services
 		public static IServiceCollection AddCatalog(this IServiceCollection services, string dbConnectionString)
 		{
 			return services.AddDbContext<CatalogDbContext>(opts => opts.UseSqlServer(dbConnectionString))
-				.AddHostedService<ProductUploadBackgroundService>()
 				.AddTransient<IAzureQueueService, AzureQueueService>()
 				.AddTransient<ICategoryRepository, CategoryRepository>()
 				.AddTransient<ICategoryServices, CategoryServices>()
@@ -28,8 +24,6 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				.AddTransient<IPictureService, PictureServices>()
 				.AddTransient<IProductRepository, ProductRepository>()
 				.AddTransient<IProductServices, ProductServices>();
-
-			
 		}
 	}
 }

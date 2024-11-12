@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
 using OgmentoAPI.Domain.Catalog.Abstractions.Dto;
 using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Services;
@@ -20,14 +21,12 @@ namespace OgmentoAPI.Domain.Catalog.Api
 	public class ProductController : ControllerBase
 	{
 		private readonly IProductServices _productServices;
-		private readonly ProductUploadBackgroundService _backgroundServices;
 		private readonly string sampleCsvRelativePath;
 		
-		public ProductController(IProductServices productServices, IOptions<FilePaths> filePaths, ProductUploadBackgroundService backgroundService)
+		public ProductController(IProductServices productServices, IOptions<FilePaths> filePaths)
 		{
 			sampleCsvRelativePath = filePaths.Value.ProductSampleCsv;
 			_productServices = productServices;
-			_backgroundServices = backgroundService;
 		}
 
 		[HttpGet]
@@ -84,19 +83,20 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			try
 			{
 				List<UploadProductModel> products = CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(file);
-				_ = _backgroundServices.UploadProductsInBackground(products);
+				Guid fileUploadUid = await _productServices.AddProductUploadFile();
+				await _productServices.UploadProducts(products, fileUploadUid);
+				return Ok(fileUploadUid);
 			}
 			catch(InvalidDataException ex)
 			{
 				throw new ValidationException($"{ex}");
 			}
-			return Ok();
 		}
 		[HttpPost]
 		[Route("uploadproduct")]
-		public async Task<IActionResult> SaveProductUpload(UploadProductModel product)
+		public async Task<IActionResult> SaveProductUpload(ProductUploadMessage products)
 		{
-			await _productServices.SaveProductUpload(product);
+			await _productServices.SaveProductUpload(products);
 			return Ok();
 		}
 		[HttpDelete]
@@ -149,7 +149,17 @@ namespace OgmentoAPI.Domain.Catalog.Api
 		[Route("upload/failed")]
 		public async Task<IActionResult> GetFailedUploads()
 		{
-			return Ok(await _productServices.FailedProductUploads());
+			List<FailedProductUploadModel> failedUploads = await _productServices.FailedProductUploads();
+			string failedUploadsString = JsonConvert.SerializeObject(failedUploads);
+			byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(failedUploadsString);
+			return File(fileBytes, "application/json", "FailedUploads.json");
+		}
+
+		[HttpGet]
+		[Route("status/{fileUploadUid}")]
+		public async Task<IActionResult> GetProductUploadStatus(Guid fileUploadUid)
+		{
+			return Ok(await _productServices.GetProductUploadStatus(fileUploadUid));
 		}
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OgmentoAPI.Domain.Catalog.Abstractions.DataContext;
-using OgmentoAPI.Domain.Catalog.Abstractions.Models;
 using OgmentoAPI.Domain.Catalog.Abstractions.Repository;
 
 namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
@@ -63,9 +62,14 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		}
 		public async Task<int> AddProduct(Product product)
 		{
-			EntityEntry<Product> productEntity = await _dbContext.Product.AddAsync(product);
+			await _dbContext.Product.AddAsync(product);
+			return await _dbContext.SaveChangesAsync();
+		}
+		public async Task<Guid> AddProductUploadFile(ProductUploads product)
+		{
+			EntityEntry<ProductUploads> productEntity = await _dbContext.ProductUploads.AddAsync(product);
 			await _dbContext.SaveChangesAsync();
-			return productEntity.Entity.ProductID;
+			return productEntity.Entity.ProductUploadsGuid;
 		}
 		public async Task<bool> IsSkuExists(string sku)
 		{
@@ -79,31 +83,24 @@ namespace OgmentoAPI.Domain.Catalog.Infrastructure.Repository
 		{
 			return await _dbContext.ProductImageMapping.Where(x => pictureIds.Contains(x.ImageId)).ExecuteDeleteAsync();
 		}
-		public async Task<List<FailedProductUpload>> GetFailedUploads()
+		public async Task<List<FailedProductUploads>> GetFailedUploads()
 		{
-			return await _dbContext.ProductUploads
-				.Where(p => !p.IsSuccess)
-				.Select(p => new FailedProductUpload
-				{
-					Sku = p.Sku,
-					ExceptionMessage = p.ExceptionMessage
-				})
-				.ToListAsync();
+			return await _dbContext.FailedProductUploads.ToListAsync();
 		}
 
-		public async Task<int> AddProductUploads(ProductUploads product)
+		public async Task<int> AddFailedProductUploads(FailedProductUploads product)
 		{
-			_dbContext.ProductUploads.Add(product);
+			_dbContext.FailedProductUploads.Add(product);
 			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task<int> UpdateProductUploads(ProductUploads product)
+		public async Task<int> UpdateProductUploads(ProductUploads productUploads)
 		{
-			_dbContext.ProductUploads.Update(product);
+			_dbContext.ProductUploads.Update(productUploads);
 			return await _dbContext.SaveChangesAsync();
 		}
-		public async Task<ProductUploads> GetProductUploads(String sku)
+		public async Task<ProductUploads> GetProductUploadsFile(Guid fileUploadUid)
 		{
-			return await _dbContext.ProductUploads.FirstAsync(x=>x.Sku == sku);
+			return await _dbContext.ProductUploads.FirstAsync(x=>x.ProductUploadsGuid == fileUploadUid);
 		}
 		public async Task<int?> GetProductId(string sku)
 		{

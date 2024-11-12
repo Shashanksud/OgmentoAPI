@@ -10,7 +10,7 @@ using OgmentoAPI.Domain.Common.Abstractions.CustomExceptions;
 using OgmentoAPI.Domain.Common.Abstractions.Dto;
 using OgmentoAPI.Domain.Common.Abstractions.Models;
 using OgmentoAPI.Domain.Common.Abstractions.Services;
-
+using System.Text;
 namespace OgmentoAPI.Domain.Catalog.Services
 {
 	public class ProductServices: IProductServices
@@ -39,6 +39,10 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				throw new EntityNotFoundException($"{sku} not found in database");
 			}
 			return productId.Value;
+		}
+		public async Task<Guid> AddProductUploadFile()
+		{
+			return await _productRepository.AddProductUploadFile(new ProductUploads());
 		}
 		private async Task<CategoryModel> GetCategory(int productId)
 		{
@@ -148,46 +152,48 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				LoyaltyPoints = productModel.LoyaltyPoints,
 				SkuCode = productModel.SkuCode,
 			};
-			string exceptionMessage = await ValidateProduct(productBase);
+			string exceptionMessage = (await ValidateProduct(productBase)).ToString();
 			if (!string.IsNullOrEmpty(exceptionMessage))
 			{
 				throw new ValidationException($"{exceptionMessage}");
 			}
-
-			Product product = new Product()
+			else
 			{
-				SkuCode = productModel.SkuCode,
-				Price = productModel.Price,
-				ProductDescription = productModel.ProductDescription,
-				ProductName = productModel.ProductName,
-				LoyaltyPoints = productModel.LoyaltyPoints,
-				ExpiryDate = productModel.ExpiryDate,
-				Weight = productModel.Weight,
-			};
-			int productId = await _productRepository.AddProduct(product);
-			if (productId<=0)
-			{
-				throw new DatabaseOperationException($"unable to add Product {productModel.SkuCode}.");
-			}
-
-			if (productModel.Categories.Count != 0)
-			{
-				List<int> categoryIds = new List<int>();
-				foreach (Guid categoryUid in productModel.Categories)
+				Product product = new Product()
 				{
-					categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
+					SkuCode = productModel.SkuCode,
+					Price = productModel.Price,
+					ProductDescription = productModel.ProductDescription,
+					ProductName = productModel.ProductName,
+					LoyaltyPoints = productModel.LoyaltyPoints,
+					ExpiryDate = productModel.ExpiryDate,
+					Weight = productModel.Weight,
+				};
+				int rowsAffected = await _productRepository.AddProduct(product);
+				if (rowsAffected <= 0)
+				{
+					throw new DatabaseOperationException($"unable to add Product {productModel.SkuCode}.");
 				}
-				await AddProductCategoryMapping(categoryIds, productId);
+				int? productId = await _productRepository.GetProductId(productModel.SkuCode);
+				if (productModel.Categories.Count != 0)
+				{
+					List<int> categoryIds = new List<int>();
+					foreach (Guid categoryUid in productModel.Categories)
+					{
+						categoryIds.Add(await _categoryServices.GetCategoryId(categoryUid));
+					}
+					await AddProductCategoryMapping(categoryIds, productId.Value);
+				}
+				if (productModel.Images.Count != 0)
+				{
+					await AddProductImageMapping(productModel.Images, productId.Value);
+				}
+				return new ResponseDto
+				{
+					IsSuccess = (rowsAffected > 0),
+					ErrorMessage = (rowsAffected <= 0) ? "Zero rows Updated" : "No Error"
+				};
 			}
-			if (productModel.Images.Count != 0)
-			{
-				await AddProductImageMapping(productModel.Images, productId);
-			}
-			return new ResponseDto
-			{
-				IsSuccess = (productId>0),
-				ErrorMessage = (productId <= 0) ? "Zero rows Updated" : "No Error"
-			};
 		}
 
 		public async Task<ProductBase> GetProduct(int productId)
@@ -207,78 +213,88 @@ namespace OgmentoAPI.Domain.Catalog.Services
 				SkuCode = product.SkuCode,
 			};
 		}
-		private async Task<String> ValidateProduct(ProductBase product)
+		private async Task<StringBuilder> ValidateProduct(ProductBase product)
 		{
-			string exceptionMessage = string.Empty;
+			StringBuilder exceptionMessage = new StringBuilder();
+
 			if (await IsSkuExists(product.SkuCode))
 			{
-				exceptionMessage += $"Product {product.SkuCode} already exists in the database.";
+				exceptionMessage.Append($"Product {product.SkuCode} already exists in the database.");
 			}
+
 			if (product.Weight > 1600)
 			{
-				exceptionMessage += $"Product {product.SkuCode} weight exceeds 1600 grams.";
+				exceptionMessage.Append($" Product {product.SkuCode} weight exceeds 1600 grams.");
 			}
-			if(product.ExpiryDate <= DateOnly.FromDateTime(DateTime.Now))
+
+			if (product.ExpiryDate <= DateOnly.FromDateTime(DateTime.Now))
 			{
-				exceptionMessage += $"Product {product.SkuCode} is expired or will expire soon.";
+				exceptionMessage.Append($" Product {product.SkuCode} is expired or will expire soon.");
 			}
+
 			return exceptionMessage;
 		}
-		public async Task SaveProductUpload(UploadProductModel product)
+
+		public async Task SaveProductUpload(ProductUploadMessage productMessage)
 		{
-			ProductUploads productUploads = await _productRepository.GetProductUploads(product.SkuCode);
-			ProductBase productBase = new ProductBase
+			int rowNumber = 1;
+			foreach(UploadProductModel product in productMessage.products)
 			{
-				Price = product.Price,
-				ProductDescription = product.ProductDescription,
-				ProductName = product.ProductName,
-				ExpiryDate = product.ExpiryDate,
-				Weight = product.Weight,
-				LoyaltyPoints = product.LoyaltyPoints,
-				SkuCode = product.SkuCode,
-			};
-			string exceptionMessage = await ValidateProduct(productBase);
-			if (product.CategoryIds.Count == 1)
-			{
-				exceptionMessage += $"Product {product.SkuCode} must include a main category and atleast one sub category.";
-			}
-			else
-			{
-				exceptionMessage += _categoryServices.ValidateCategories(product.CategoryIds);
-			}
-			if (!string.IsNullOrEmpty(exceptionMessage))
-			{
-				if (!productUploads.IsSuccess)
+				rowNumber++;
+				ProductBase productBase = new ProductBase
 				{
-					productUploads.ExceptionMessage += exceptionMessage;
+					Price = product.Price,
+					ProductDescription = product.ProductDescription,
+					ProductName = product.ProductName,
+					ExpiryDate = product.ExpiryDate,
+					Weight = product.Weight,
+					LoyaltyPoints = product.LoyaltyPoints,
+					SkuCode = product.SkuCode,
+				};
+				StringBuilder exceptionMessage = await ValidateProduct(productBase);
+				if (product.CategoryIds.Count == 1)
+				{
+					exceptionMessage.Append($"Product {product.SkuCode} must include a main category and atleast one sub category.");
 				}
 				else
 				{
-					productUploads.IsSuccess = false;
-					productUploads.ExceptionMessage = exceptionMessage;
+					exceptionMessage.Append( _categoryServices.ValidateCategories(product.CategoryIds));
 				}
-				await _productRepository.UpdateProductUploads(productUploads);
-			}
-			else
-			{
-				Product productModel = new Product
+				if (exceptionMessage.Length > 0)
 				{
-					Price = product.Price,
-					ExpiryDate = product.ExpiryDate,
-					ProductDescription = product.ProductDescription,
-					ProductName = product.ProductName,
-					SkuCode = product.SkuCode,
-					LoyaltyPoints = product.LoyaltyPoints,
-					Weight = product.Weight,
-				};
-				
-				int productId = await _productRepository.AddProduct(productModel);
-				if (productId <= 0)
-				{
-					throw new DatabaseOperationException("Product did not get added in the database.");
+					FailedProductUploads failedProductUpload = new FailedProductUploads
+					{
+						ExceptionMessage = exceptionMessage.ToString(),
+						RowNumber = rowNumber,
+						Product = JsonConvert.SerializeObject(product)
+					};
+					await _productRepository.AddFailedProductUploads(failedProductUpload);
 				}
-				await AddProductCategoryMapping(product.CategoryIds, productId);
+				else
+				{
+					Product productModel = new Product
+					{
+						Price = product.Price,
+						ExpiryDate = product.ExpiryDate,
+						ProductDescription = product.ProductDescription,
+						ProductName = product.ProductName,
+						SkuCode = product.SkuCode,
+						LoyaltyPoints = product.LoyaltyPoints,
+						Weight = product.Weight,
+					};
+
+					int rowsAffected = await _productRepository.AddProduct(productModel);
+					if (rowsAffected <= 0)
+					{
+						throw new DatabaseOperationException("Product did not get added in the database.");
+					}
+					int? productId = await _productRepository.GetProductId(product.SkuCode);
+					await AddProductCategoryMapping(product.CategoryIds, productId.Value);
+				}
 			}
+			ProductUploads productUploads = await _productRepository.GetProductUploadsFile(productMessage.FileUploadUid);
+			productUploads.Status = "Completed";
+			await _productRepository.UpdateProductUploads(productUploads);
 		}
 		public async Task<ResponseDto> DeletePicture(string hash)
 		{
@@ -387,37 +403,44 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			await _productRepository.AddProductImageMapping(productImages);
 		}
 
-		public async Task UploadProducts(List<UploadProductModel> products)
+		public async Task UploadProducts(List<UploadProductModel> products, Guid fileUploadUid)
 		{
-			foreach (UploadProductModel product in products)
+			ProductUploadMessage productUploadMessage = new ProductUploadMessage()
 			{
-				string productString = JsonConvert.SerializeObject(product);
-				ProductUploads productUpload = new ProductUploads
-				{
-					Product = productString,
-					IsSuccess = false,
-					Sku = product.SkuCode
-				};
-				int rowAffected = await _productRepository.AddProductUploads(productUpload);
-				try
-				{
-					await _azureQueueService.AddMessageAsync(productString);
-					productUpload.IsSuccess = true;
-				}
-				catch (Exception ex)
-				{
-					productUpload.ExceptionMessage = ex.Message;
-				}
-				finally
-				{
-					await _productRepository.UpdateProductUploads(productUpload);
-				}
+				products = products,
+				FileUploadUid = fileUploadUid
+			};
+			string productString = JsonConvert.SerializeObject(productUploadMessage);
+			ProductUploads fileUploaded = await _productRepository.GetProductUploadsFile(fileUploadUid);
+			try
+			{
+				await _azureQueueService.AddMessageAsync(productString);
+				fileUploaded.Status = "Processing";
+			}
+			catch (Exception ex)
+			{
+				fileUploaded.Status = "failed";
+				throw new InvalidOperationException($"Error Ocurred while uploading product in Queue:{ex}");
+			}
+			finally
+			{
+				await _productRepository.UpdateProductUploads(fileUploaded);
 			}
 		}
 
-		public async Task<List<FailedProductUpload>> FailedProductUploads()
+		public async Task<List<FailedProductUploadModel>> FailedProductUploads()
 		{
-			return await _productRepository.GetFailedUploads();
+			List<FailedProductUploads> failedProducts = await _productRepository.GetFailedUploads();
+			return failedProducts.Select(x => new FailedProductUploadModel
+			{
+				RowNumber = x.RowNumber,
+				Product = x.Product,
+				ExceptionMessage = x.ExceptionMessage,
+			}).ToList();
+		}
+		public async Task<string> GetProductUploadStatus(Guid fileUploadUid)
+		{
+			return (await _productRepository.GetProductUploadsFile(fileUploadUid)).Status;
 		}
 	}
 }

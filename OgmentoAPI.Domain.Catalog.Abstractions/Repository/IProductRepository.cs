@@ -12,18 +12,19 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Repository
 		Task<int> UpdateProduct(Product product);
 		Task<int> DeleteProduct(Product product);
 		Task<int> AddProduct(Product product);
-		Task<int> AddProductUploads(ProductUploads product);
-		Task<int> UpdateProductUploads(ProductUploads product);
+		Task<int> AddFailedProductUploads(FailedProductUploads product);
+		Task<int> UpdateProductUploads(ProductUploads productUploads);
 		Task<int> DeletePictureProductMapping(int pictureId);
 		Task<int> DeleteProductCategoryMapping(int productId);
 		Task<int> DeletePictureProductMappings(List<int> pictureIds);
-		Task<List<FailedProductUpload>> GetFailedUploads();
+		Task<Guid> AddProductUploadFile(ProductUploads product);
+		Task<List<FailedProductUploads>> GetFailedUploads();
 		Task<List<int>> GetCategory(int productId);
 		Task<bool> IsSkuExists(string sku);
 		Task<int> AddProductCategoryMapping(List<ProductCategoryMapping> productCategories);
 		Task<int> AddProductImageMapping(List<ProductImageMapping> productImageMappings);
 		Task<List<int>> GetProductImageMappings(int productId);
-		Task<ProductUploads> GetProductUploads(String sku);
 		Task<Product?> GetProduct(int productId);
+		Task<ProductUploads> GetProductUploadsFile(Guid fileUploadUid);
 	}
 }

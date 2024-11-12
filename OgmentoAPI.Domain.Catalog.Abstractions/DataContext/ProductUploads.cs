@@ -1,12 +1,11 @@
-﻿
+﻿using System.Security.Principal;
+
 namespace OgmentoAPI.Domain.Catalog.Abstractions.DataContext
 {
 	public class ProductUploads
 	{
 		public int ProductUploadsId { get; set; }
-		public string Product { get; set; }
-		public string Sku { get; set; }
-		public bool IsSuccess { get; set; }
-		public string? ExceptionMessage { get; set; } = null;
+		public Guid ProductUploadsGuid { get; set; } = Guid.NewGuid();
+		public string Status { get; set; } = "Pending";
 	}
 }

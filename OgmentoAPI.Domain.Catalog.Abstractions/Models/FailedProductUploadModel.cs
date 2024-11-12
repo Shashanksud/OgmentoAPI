@@ -1,9 +1,10 @@
 ﻿
 namespace OgmentoAPI.Domain.Catalog.Abstractions.Models
 {
-	public class FailedProductUpload
+	public class FailedProductUploadModel
 	{
-		public string Sku { get; set; }
+		public string Product { get; set; }
+		public int RowNumber { get; set; }
 		public string ExceptionMessage { get; set; }
 	}
 }

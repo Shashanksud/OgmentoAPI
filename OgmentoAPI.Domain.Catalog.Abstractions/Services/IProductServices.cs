@@ -13,12 +13,14 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 		Task<ResponseDto> DeleteProduct(string sku);
 		Task<ResponseDto> AddProduct(AddProductModel productModel);
 		Task UploadPictures(IFormFile csvFile);
-		Task UploadProducts(List<UploadProductModel> products);
+		Task UploadProducts(List<UploadProductModel> products, Guid fileUploadUid);
 		Task<ResponseDto> DeletePicture(string hash);
-		Task SaveProductUpload(UploadProductModel product);
+		Task SaveProductUpload(ProductUploadMessage products);
 		Task<bool> IsSkuExists(string sku);
-		Task<List<FailedProductUpload>> FailedProductUploads();
+		Task<Guid> AddProductUploadFile();
+		Task<List<FailedProductUploadModel>> FailedProductUploads();
 		Task<ProductBase> GetProduct(int productId);
 		Task<int> GetProductId(string sku);
+		Task<string> GetProductUploadStatus(Guid fileUploadUid);
 	}
 }
