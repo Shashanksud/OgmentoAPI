@@ -32,11 +32,11 @@ namespace AzureFunctionApp.Functions
 				if (string.IsNullOrEmpty(_authToken) || DateTime.UtcNow >= _tokenExpiryTime)
 				{
 					logger.LogInformation("token is null or empty or expired");
-					await RefreshAuthTokenAsync();
+					await RefreshAuthTokenAsync(logger);
 					logger.LogInformation("token acquired");
 				}
 				logger.LogInformation("sending request to SaveProductUpload Api");
-				await UploadProductAsync(product, _authToken);
+				await UploadProductAsync(product, _authToken, logger);
 				logger.LogInformation("products uploaded successfully");
 			}
 			catch (Exception ex)
@@ -46,33 +46,44 @@ namespace AzureFunctionApp.Functions
 			}
 
 		}
-		private async Task RefreshAuthTokenAsync()
+		private async Task RefreshAuthTokenAsync(ILogger logger)
 		{
 			LoginModel loginDto = new LoginModel { Email = _configuration["ApiCredentials:Email"], Password = _configuration["ApiCredentials:Password"] };
+			logger.LogInformation($"login email: {loginDto.Email} , password: {loginDto.Password} ");
 			StringContent content = new StringContent(JsonSerializer.Serialize(loginDto), System.Text.Encoding.UTF8, "application/json");
 
 			string loginUrl = _configuration["LoginUrl"];
+			logger.LogInformation($"loginUrl: {loginUrl}");
 			HttpResponseMessage response = await _httpClient.PostAsync(loginUrl, content);
+			logger.LogInformation($"{response.StatusCode}");
 			response.EnsureSuccessStatusCode();
 
 			string responseContent = await response.Content.ReadAsStringAsync();
+			logger.LogInformation($"deserializing token");
 			TokenModel apiResponse = JsonSerializer.Deserialize<TokenModel>(responseContent);
+			logger.LogInformation($"deserializing token completed");
 			_authToken = apiResponse.token;
 			_tokenExpiryTime = DateTime.UtcNow.AddMinutes(45);
 		}
 
-		private async Task UploadProductAsync(ProductUploadMessage product, string authToken)
+		private async Task UploadProductAsync(ProductUploadMessage product, string authToken, ILogger logger)
 		{
+			logger.LogInformation($"Updating authorization headers");
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
 			string jsonString = JsonSerializer.Serialize(product);
+			logger.LogInformation($"serializing product completed");
 			StringContent content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
+			logger.LogInformation($"Updating product request body");
 			string uploadProductUrl = _configuration["UploadProductUrl"];
+			logger.LogInformation($"save Product url: {uploadProductUrl}");
 			HttpResponseMessage response = await _httpClient.PostAsync(uploadProductUrl, content);
 			if (response.StatusCode == HttpStatusCode.Unauthorized)
 			{
-				await RefreshAuthTokenAsync();
+				logger.LogInformation("save productUrl unauthorized");
+				await RefreshAuthTokenAsync(logger);
 				_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
 				response = await _httpClient.PostAsync(uploadProductUrl, content);
+				logger.LogInformation($"save product url status: {response.StatusCode}");
 			}
 			response.EnsureSuccessStatusCode();
 		}
