@@ -54,6 +54,8 @@ namespace AzureFunctionApp.Functions
 
 			string loginUrl = _configuration["LoginUrl"];
 			logger.LogInformation($"loginUrl: {loginUrl}");
+			string loginContent = await content.ReadAsStringAsync();
+			logger.LogInformation($"login content: {loginContent}");
 			HttpResponseMessage response = await _httpClient.PostAsync(loginUrl, content);
 			logger.LogInformation($"{response.StatusCode}");
 			response.EnsureSuccessStatusCode();
