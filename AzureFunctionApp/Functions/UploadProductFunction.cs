@@ -31,7 +31,9 @@ namespace AzureFunctionApp.Functions
 				logger.LogInformation("deserializing message completed.");
 				if (string.IsNullOrEmpty(_authToken) || DateTime.UtcNow >= _tokenExpiryTime)
 				{
+					logger.LogInformation("token is null or empty or expired");
 					await RefreshAuthTokenAsync();
+					logger.LogInformation("token acquired");
 				}
 				logger.LogInformation("sending request to SaveProductUpload Api");
 				await UploadProductAsync(product, _authToken);
