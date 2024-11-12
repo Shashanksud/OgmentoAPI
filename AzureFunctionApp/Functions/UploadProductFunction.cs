@@ -24,7 +24,8 @@ namespace AzureFunctionApp.Functions
 			logger.LogInformation($"Queue trigger function processed: {message}");
 			try
 			{
-				ProductUploadMessage product = JsonSerializer.Deserialize<ProductUploadMessage>(message);
+				JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions(){ PropertyNameCaseInsensitive= true};
+				ProductUploadMessage product = JsonSerializer.Deserialize<ProductUploadMessage>(message, jsonSerializerOptions);
 
 				if (string.IsNullOrEmpty(_authToken) || DateTime.UtcNow >= _tokenExpiryTime)
 				{
@@ -48,14 +49,15 @@ namespace AzureFunctionApp.Functions
 			response.EnsureSuccessStatusCode();
 
 			string responseContent = await response.Content.ReadAsStringAsync();
-
-			_authToken = responseContent;
+			TokenModel apiResponse = JsonSerializer.Deserialize<TokenModel>(responseContent);
+			_authToken = apiResponse.token;
 			_tokenExpiryTime = DateTime.UtcNow.AddMinutes(45);
 		}
 
 		private async Task UploadProductAsync(ProductUploadMessage product, string authToken)
 		{
 			
+
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
 			string jsonString = JsonSerializer.Serialize(product);
 			StringContent content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
