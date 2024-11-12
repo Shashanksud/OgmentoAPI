@@ -40,9 +40,12 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			}
 			return productId.Value;
 		}
-		public async Task<Guid> AddProductUploadFile()
+		public async Task<Guid> AddProductUploadFile(string fileName)
 		{
-			return await _productRepository.AddProductUploadFile(new ProductUploads());
+			return await _productRepository.AddProductUploadFile(new ProductUploads()
+			{
+				FileName = fileName,
+			});
 		}
 		private async Task<CategoryModel> GetCategory(int productId)
 		{

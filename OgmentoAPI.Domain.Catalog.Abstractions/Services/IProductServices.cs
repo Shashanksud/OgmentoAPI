@@ -17,7 +17,7 @@ namespace OgmentoAPI.Domain.Catalog.Abstractions.Services
 		Task<ResponseDto> DeletePicture(string hash);
 		Task SaveProductUpload(ProductUploadMessage products);
 		Task<bool> IsSkuExists(string sku);
-		Task<Guid> AddProductUploadFile();
+		Task<Guid> AddProductUploadFile(string fileName);
 		Task<List<FailedProductUploadModel>> FailedProductUploads();
 		Task<ProductBase> GetProduct(int productId);
 		Task<int> GetProductId(string sku);

@@ -83,7 +83,7 @@ namespace OgmentoAPI.Domain.Catalog.Api
 			try
 			{
 				List<UploadProductModel> products = CatalogHelper.UploadCsvFile<UploadProductModel, UploadProductModelMap>(file);
-				Guid fileUploadUid = await _productServices.AddProductUploadFile();
+				Guid fileUploadUid = await _productServices.AddProductUploadFile(file.FileName);
 				await _productServices.UploadProducts(products, fileUploadUid);
 				return Ok(fileUploadUid);
 			}
