@@ -60,7 +60,6 @@ namespace OgmentoAPI.Domain.Authorization.Api
 		public IActionResult UpdateUserDetails(UserDetailsDto userDetails)
 		{
 			UserModel model = userDetails.ToModel();
-			model.UserId = Self.UserId;
 			var result = _userService.UpdateUser(model);
 			return Ok(result);
 		}
