@@ -2,6 +2,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace AzureFunctionApp.Functions
@@ -56,14 +57,17 @@ namespace AzureFunctionApp.Functions
 
 		private async Task UploadProductAsync(ProductUploadMessage product, string authToken)
 		{
-			
-
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
 			string jsonString = JsonSerializer.Serialize(product);
 			StringContent content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
 			string uploadProductUrl = _configuration["UploadProductUrl"];
 			HttpResponseMessage response = await _httpClient.PostAsync(uploadProductUrl, content);
-			response.EnsureSuccessStatusCode();
+			if (response.StatusCode == HttpStatusCode.Unauthorized)
+			{
+				await RefreshAuthTokenAsync();
+				_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
+				response = await _httpClient.PostAsync(uploadProductUrl, content);
+			}
 		}
 	}
 }

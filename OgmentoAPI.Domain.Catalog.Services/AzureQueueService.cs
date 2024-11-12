@@ -8,10 +8,8 @@ namespace OgmentoAPI.Domain.Catalog.Services
 	public class AzureQueueService: IAzureQueueService
 	{
 		private readonly QueueClient _queueClient;
-		public AzureQueueService(QueueClient queueClient, IOptions<AzureQueue> azureQueue) {
-			string connectionString = azureQueue.Value.ConnectionString;
-			string queueName = azureQueue.Value.QueueName;
-			_queueClient = new QueueClient(connectionString, queueName);
+		public AzureQueueService(QueueClient queueClient) {
+			_queueClient = queueClient;
 			_queueClient.CreateIfNotExists();
 		}
 		public async Task AddMessageAsync(string message)

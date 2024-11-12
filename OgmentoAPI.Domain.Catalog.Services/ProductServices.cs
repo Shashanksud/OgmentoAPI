@@ -240,7 +240,7 @@ namespace OgmentoAPI.Domain.Catalog.Services
 			int rowNumber = 1;
 			foreach(UploadProductModel product in productMessage.products)
 			{
-				rowNumber++;
+				++rowNumber;
 				ProductBase productBase = new ProductBase
 				{
 					Price = product.Price,
