@@ -43,7 +43,7 @@ namespace OgmentoAPI.Middlewares
 				context.Response.Clear();
 				ExceptionResponse response = exception switch
 				{
-					ValidationException _ => new ExceptionResponse(nameof(ValidationException), HttpStatusCode.InternalServerError, exception.Message),
+					ValidationException _ => new ExceptionResponse(nameof(ValidationException), HttpStatusCode.BadRequest, exception.Message),
 					DatabaseOperationException _ => new ExceptionResponse(nameof(DatabaseOperationException), HttpStatusCode.InternalServerError, exception.Message),
 					EntityNotFoundException _ => new ExceptionResponse(nameof(EntityNotFoundException), HttpStatusCode.NotFound, exception.Message),
 					InvalidOperationException _ => new ExceptionResponse(nameof(InvalidOperationException), HttpStatusCode.BadRequest, exception.Message),
