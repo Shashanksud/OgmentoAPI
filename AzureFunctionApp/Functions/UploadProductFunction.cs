@@ -25,18 +25,22 @@ namespace AzureFunctionApp.Functions
 			logger.LogInformation($"Queue trigger function processed: {message}");
 			try
 			{
+				Console.WriteLine("deserializing message.");
 				JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions(){ PropertyNameCaseInsensitive= true};
 				ProductUploadMessage product = JsonSerializer.Deserialize<ProductUploadMessage>(message, jsonSerializerOptions);
-
+				Console.WriteLine("deserializing message completed.");
 				if (string.IsNullOrEmpty(_authToken) || DateTime.UtcNow >= _tokenExpiryTime)
 				{
 					await RefreshAuthTokenAsync();
 				}
+				Console.WriteLine("sending request to SaveProductUpload Api");
 				await UploadProductAsync(product, _authToken);
+				Console.WriteLine("products uploaded successfully");
 			}
 			catch (Exception ex)
 			{
 				logger.LogError($"Error processing message: {ex.Message}");
+				Console.WriteLine(ex.ToString());
 			}
 
 		}
@@ -64,10 +68,12 @@ namespace AzureFunctionApp.Functions
 			HttpResponseMessage response = await _httpClient.PostAsync(uploadProductUrl, content);
 			if (response.StatusCode == HttpStatusCode.Unauthorized)
 			{
+				Console.WriteLine("Not authorized: login again");
 				await RefreshAuthTokenAsync();
 				_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
 				response = await _httpClient.PostAsync(uploadProductUrl, content);
 			}
+			response.EnsureSuccessStatusCode();
 		}
 	}
 }
