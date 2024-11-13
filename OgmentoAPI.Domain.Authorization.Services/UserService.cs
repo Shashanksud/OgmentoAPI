@@ -81,7 +81,9 @@ namespace OgmentoAPI.Domain.Authorization.Services
             try
             {
                 List<Guid> guidList = new List<Guid>(user.SalesCenters.Keys);
-                _salesCenterService.UpdateSalesCenters(user.UserId, guidList);
+
+				int? userId = _context.GetUserId(user.UserUid);
+				_salesCenterService.UpdateSalesCenters(userId.Value, guidList);
                 return _context.UpdateUser(user);
             }
             catch (Exception ex)
